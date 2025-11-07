@@ -2,19 +2,11 @@
 
 #include <vector>
 
-#include "./node.h"
-
 #include "./ammeter.h"
 
 
 class CircuitMatrix {
 private:
-	
-
-
-	std::vector<double> rhs;
-
-	size_t num_rows;
 
 public:
 	CircuitMatrix();
