@@ -33,7 +33,8 @@ namespace lingebra {
 		constexpr data_type get() const noexcept { return value; }
 		constexpr data_type get_n() const noexcept { return n; }
 
-		/* uses Extended Euclidian Algorithm */
+		// uses Extended Euclidian
+		// Undefined behavior if called on zero.
 		constexpr ModInt inverse() const noexcept requires (is_prime(N)) {
 			data_type t = 0;
 			data_type new_t = 1;
@@ -61,7 +62,7 @@ namespace lingebra {
 			return *this;
 		}
 
-		constexpr ModInt& operator+=(const ModInt& other) noexcept {
+		constexpr ModInt& operator-=(const ModInt& other) noexcept {
 			value -= other.value;
 			if (value < 0) value += n;
 			return *this;
