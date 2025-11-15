@@ -6,15 +6,27 @@
 
 class VoltageSource : public NPinPart<1> {
 private:
-	double voltage;
+	real_t voltage;
+	size_t branch_id;
 
 public:
-	explicit VoltageSource(double voltage);
+	explicit VoltageSource(real_t voltage);
 	~VoltageSource() noexcept;
 
-	double get_voltage() const;
+	void stamp(CircuitMatrix& matrix) const override;
+	void reserve_additional_rows(CircuitMatrix& matrix) override;
+};
 
-	inline constexpr bool is_voltage_source() const override { return true; }
+
+class VoltageSource2Pin : public NPinPart<2> {
+private:
+	real_t voltage;
+	size_t branch_id;
+
+public:
+	explicit VoltageSource2Pin(real_t voltage);
+	~VoltageSource2Pin() noexcept;
 
 	void stamp(CircuitMatrix& matrix) const override;
+	void reserve_additional_rows(CircuitMatrix& matrix) override;
 };

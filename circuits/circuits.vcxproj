@@ -102,7 +102,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HIGH_PRECISION</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
     </ClCompile>
@@ -117,7 +117,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HIGH_PRECISION</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
     </ClCompile>
@@ -129,25 +129,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\circuit\ammeter.cpp" />
-    <ClCompile Include="src\circuit\part_base.cpp" />
     <ClCompile Include="src\circuit\circuit.cpp" />
     <ClCompile Include="src\circuit\circuit_matrix.cpp" />
-    <ClCompile Include="src\circuit\node.cpp" />
     <ClCompile Include="src\circuit\n_pin_part.h" />
     <ClCompile Include="src\circuit\resistor.cpp" />
     <ClCompile Include="src\circuit\voltage_source.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\circuit\part.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\circuit\ammeter.h" />
     <ClInclude Include="src\circuit\circuit.h" />
     <ClInclude Include="src\circuit\circuit_matrix.h" />
     <ClInclude Include="src\circuit\node.h" />
     <ClInclude Include="src\circuit\part_base.h" />
+    <ClInclude Include="src\circuit\pin.h" />
     <ClInclude Include="src\circuit\resistor.h" />
-    <ClInclude Include="src\circuit\voltmeter.h" />
+    <ClInclude Include="src\circuit\types.h" />
     <ClInclude Include="src\circuit\voltage_source.h" />
     <ClInclude Include="src\lingebra\lingebra.h" />
   </ItemGroup>

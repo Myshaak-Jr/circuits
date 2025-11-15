@@ -2,12 +2,16 @@
 
 #include <memory>
 #include <vector>
+#include <filesystem>
 
 #include "./part_base.h"
 #include "./node.h"
 #include "./voltage_source.h"
 #include "./circuit_matrix.h"
+#include "./types.h"
 
+
+namespace fs = std::filesystem;
 
 class Circuit {
 private:
@@ -22,19 +26,19 @@ private:
 
 	CircuitMatrix matrix;
 
-	double timestep;
+	real_t timestep;
 
-	void update();
+	void update_parts();
 
 public:
-	explicit Circuit(double timestep);
+	explicit Circuit(real_t timestep);
 	~Circuit() noexcept = default;
 
 
 	template <class TPart, class... TArgs>
 	TPart* add_part(TArgs&&... args) {
 		static_assert(std::is_base_of_v<Part, TPart>, "TPart must derive from Part.");
-		
+
 		auto part = std::make_unique<TPart>(std::forward<TArgs>(args)...);
 		TPart* raw = part.get();
 		parts.push_back(std::move(part));
@@ -48,13 +52,18 @@ public:
 
 	VoltageSource* get_ground() const;
 
-	void connect(Pin pin_a, Pin pin_b);
+	void connect(const Pin& pin_a, const Pin& pin_b);
 
-	inline void set_timestep(double dt) { timestep = dt; }
-	inline double get_timestep() const { return timestep; }
+	inline void set_timestep(real_t dt) { timestep = dt; }
+	inline real_t get_timestep() const { return timestep; }
 
+	void scope_voltage(const ConstPin& a, const ConstPin& b, const fs::path& csv_table_dst);
+	// Pin a and b must be of the same part
+	void scope_current(const ConstPin& a, const ConstPin& b, const fs::path& csv_table_dst);
+	void scope_current(NPinPart<2>* part, const fs::path& csv_table_dst);
 
-	double get_voltage_on_pin(Pin pin) const;
+	void export_tables() const;
 
-	void run_for(size_t num_steps);
+	void run_for_steps(size_t num_steps);
+	void run_for_seconds(real_t secs);
 };

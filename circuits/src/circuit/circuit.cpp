@@ -1,7 +1,7 @@
 #include "./circuit.h"
 
 
-Circuit::Circuit(double timestep) : timestep(timestep), matrix() {
+Circuit::Circuit(real_t timestep) : timestep(timestep), matrix() {
 	ground = add_part<VoltageSource>(0.0f);
 }
 
@@ -17,7 +17,7 @@ Node* Circuit::create_new_node() {
 	return raw;
 }
 
-void Circuit::connect(Pin pin_a, Pin pin_b) {
+void Circuit::connect(const Pin& pin_a, const Pin& pin_b) {
 	if (pin_a.node == pin_b.node) {
 		if (pin_a.node == nullptr) {
 			Node* node = create_new_node();
@@ -33,24 +33,59 @@ void Circuit::connect(Pin pin_a, Pin pin_b) {
 	}
 }
 
-void Circuit::update() {
-	// prepare the matrix
-	matrix.clear();
+void Circuit::update_parts() {
+	// prepare the matrix and count the number of rows needed
+	matrix.reset_row_count();
 	for (auto& node : nodes) {
 		node->set_row_id(matrix.reserve_row());
 	}
-
 	for (auto& part : parts) {
-		if (part->has_ammeter()) {
-			Ammeter* am = part->get_ammeter();
-			am->set_row_id(matrix.reserve_row());
-		}
+		part->reserve_additional_rows(matrix);
 	}
+	matrix.init(timestep);
 
-	// propagate the matrix
-	for (auto& part : parts) {
+	// fill the matrix
+	for (const auto& part : parts) {
 		part->stamp(matrix);
 	}
 
+	matrix.solve();
+
+	for (auto& node : nodes) {
+		const size_t id = node->get_node_id();
+		node->set_voltage(matrix.get_solution_value(id));
+	}
+
+	for (auto& part : parts) {
+		part->update(matrix);
+	}
+}
+
+void Circuit::run_for_steps(size_t num_steps) {
+	for (size_t frame = 0; frame < num_steps; ++frame) {
+		update_parts();
+
+		// TODO: record the data in the scopes etc.
+	}
+}
+
+void Circuit::run_for_seconds(real_t secs) {
+	run_for_steps(static_cast<size_t>(secs/timestep));
+}
+
+// scopes
+void Circuit::scope_voltage(const ConstPin& a, const ConstPin& b, const fs::path& csv_table_dst) {
+	
+}
+
+void Circuit::scope_current(const ConstPin& a, const ConstPin& b, const fs::path& csv_table_dst) {
+
+}
+
+void Circuit::scope_current(NPinPart<2>* part, const fs::path& csv_table_dst) {
+
+}
+
+void Circuit::export_tables() const {
 
 }

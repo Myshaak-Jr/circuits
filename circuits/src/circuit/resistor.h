@@ -5,11 +5,11 @@
 
 class Resistor : public NPinPart<2> {
 private:
-	double ohms;
-	double conductance;
+	real_t ohms;
+	real_t conductance;
 
 public:
-	Resistor(double ohms);
+	Resistor(real_t ohms);
 	~Resistor() noexcept = default;
 
 	void stamp(CircuitMatrix& matrix) const override;

@@ -5,7 +5,7 @@
 
 
 int main() {
-	Circuit circuit{};
+	Circuit circuit{1e-3};
 
 	VoltageSource* ground = circuit.get_ground();
 	VoltageSource* source = circuit.add_part<VoltageSource>(5.0f);
@@ -17,9 +17,12 @@ int main() {
 	circuit.connect(r1->pin(1), r2->pin(0));
 	circuit.connect(r2->pin(1), ground->pin());
 	
-	circuit.run_for(1);
-	
-	circuit.voltage_on_pin(r1->pin(1));
+	circuit.scope_voltage(r1->pin(1), ground->pin(), "voltage.csv");
+	circuit.scope_current(r1, "current.csv");
 
+	circuit.run_for_seconds(10);
+
+	circuit.export_tables();
+	
 	return 0;
 }

@@ -9,6 +9,26 @@
 
 
 namespace lingebra {
+	// generic abs
+	using std::abs;
+
+	template <class T>
+	concept has_abs_method = requires (const T & a) { { a.abs() } -> std::convertible_to<T>; };
+
+	template <class T>
+	concept has_abs_static_method = requires (const T & a) { { T::abs(a) } -> std::convertible_to<T>; };
+
+	template <has_abs_method T>
+	constexpr T abs(const T& x) {
+		return x.abs();
+	}
+
+	template <has_abs_static_method T>
+	constexpr T abs(const T& x) {
+		return T::abs(x);
+	}
+
+	// is prime
 	constexpr bool is_prime(size_t n) noexcept {
 		if (n < 2) return false;
 		for (size_t i = 2; i * i <= n; ++i) {
@@ -86,6 +106,10 @@ namespace lingebra {
 			ModInt temp = *this;
 			temp *= other;
 			return temp;
+		}
+
+		constexpr ModInt abs() const noexcept {
+			return ModInt(*this);
 		}
 
 		// Prime N only
@@ -211,22 +235,22 @@ namespace lingebra {
 
 
 	// Vectors and Matrices
-	template <field TData>
+	template <field F>
 	class Vector {
 	public:
-		using value_type = TData;
+		using value_type = F;
 
 	private:
-		std::vector<TData> data;
+		std::vector<F> data;
 
-		static constexpr TData zero = make_zero<TData>();
+		static constexpr F zero = make_zero<F>();
 
 	public:
 		constexpr Vector() noexcept = default;
-		constexpr Vector(const size_t size, const TData& value) : data(size, value) {}
+		constexpr Vector(const size_t size, const F& value) : data(size, value) {}
 		constexpr explicit Vector(const size_t size) : Vector(size, zero) {}
-		constexpr Vector(std::initializer_list<TData> list) : data(list) {}
-		constexpr Vector(const std::vector<TData>& data) : data(data) {}
+		constexpr Vector(std::initializer_list<F> list) : data(list) {}
+		constexpr Vector(const std::vector<F>& data) : data(data) {}
 		template <std::input_iterator Iter>
 		constexpr Vector(Iter first, Iter last) : data(first, last) {}
 
@@ -240,10 +264,10 @@ namespace lingebra {
 
 		// random generation (only for finite division rings)
 		template <class TEngine>
-		static Vector make_random(TEngine& engine, const size_t size) requires ModIntLike<TData> {
+		static Vector make_random(TEngine& engine, const size_t size) requires ModIntLike<F> {
 			Vector vec(size);
 			for (size_t i = 0; i < size; ++i) {
-				vec[i] = TData::make_random(engine);
+				vec[i] = F::make_random(engine);
 			}
 			return vec;
 		}
@@ -253,19 +277,15 @@ namespace lingebra {
 			assign(data.size(), zero);
 		}
 
-		constexpr void assign(const size_t new_size) {
-			assign(new_size, zero);
-		}
-
-		constexpr void assign(const size_t new_size, const TData& value) {
+		constexpr void assign(const size_t new_size, const F& value = zero) {
 			data.assign(new_size, value);
 		}
 
-		constexpr TData& operator[](const size_t pos) noexcept {
+		constexpr F& operator[](const size_t pos) noexcept {
 			return data[pos];
 		}
 
-		constexpr const TData& operator[](const size_t pos) const noexcept {
+		constexpr const F& operator[](const size_t pos) const noexcept {
 			return data[pos];
 		}
 
@@ -273,8 +293,9 @@ namespace lingebra {
 			return data.size();
 		}
 
-		constexpr void swap_values(const size_t a, const size_t b) noexcept(std::is_nothrow_swappable_v<TData>) {
-			std::swap(data[a], data[b]);
+		constexpr void swap_values(const size_t a, const size_t b) noexcept(std::is_nothrow_swappable_v<F>) {
+			using std::swap;
+			swap(data[a], data[b]);
 		}
 
 		constexpr bool operator==(const Vector& other) const {
@@ -299,12 +320,12 @@ namespace lingebra {
 			return result;
 		}
 
-		constexpr TData operator*(const Vector& other) const {
+		constexpr F operator*(const Vector& other) const {
 			if (dim() != other.dim()) {
 				throw std::runtime_error("Vector must be of the same dimension");
 			}
 
-			TData sum = make_zero<TData>();
+			F sum = make_zero<F>();
 
 			for (size_t i = 0; i < dim(); ++i) {
 				sum += data[i] * other[i];
@@ -313,29 +334,29 @@ namespace lingebra {
 			return sum;
 		}
 
-		constexpr Vector& operator*=(const TData& scalar) {
+		constexpr Vector& operator*=(const F& scalar) {
 			for (size_t i = 0; i < dim(); ++i) {
 				data[i] *= scalar;
 			}
 			return *this;
 		}
-		constexpr Vector& operator/=(const TData& scalar) {
+		constexpr Vector& operator/=(const F& scalar) {
 			for (size_t i = 0; i < dim(); ++i) {
 				data[i] /= scalar;
 			}
 			return *this;
 		}
 
-		constexpr Vector operator*(const TData& scalar) const {
+		constexpr Vector operator*(const F& scalar) const {
 			Vector temp(*this);
 			temp *= scalar;
 			return temp;
 		}
-		constexpr friend Vector operator*(const TData& scalar, const Vector& vec) {
+		constexpr friend Vector operator*(const F& scalar, const Vector& vec) {
 			return vec * scalar;
 		}
 
-		constexpr Vector operator/(const TData& scalar) const {
+		constexpr Vector operator/(const F& scalar) const {
 			Vector temp(*this);
 			temp /= scalar;
 			return temp;
@@ -344,19 +365,19 @@ namespace lingebra {
 
 
 	// A dense matrix
-	template <field TData>
+	template <field F>
 	class Matrix {
 	public:
-		using value_type = TData;
+		using value_type = F;
 
 	private:
-		std::vector<std::vector<TData>> data;
+		std::vector<std::vector<F>> data;
 		size_t num_rows, num_cols;
 
-		static constexpr TData zero = make_zero<TData>();
+		static constexpr F zero = make_zero<F>();
 
 	public:
-		constexpr Matrix(const std::vector<std::vector<TData>>& data) : data(data) {
+		constexpr Matrix(const std::vector<std::vector<F>>& data) : data(data) {
 			num_rows = data.size();
 			if (num_rows != 0) {
 				num_cols = data[0].size();
@@ -366,12 +387,12 @@ namespace lingebra {
 			}
 		}
 		constexpr Matrix() noexcept : num_rows(0), num_cols(0) {}
-		constexpr Matrix(const size_t m, const size_t n, const TData& value) : data(m, std::vector<TData>(n, value)), num_rows(m), num_cols(n) {}
+		constexpr Matrix(const size_t m, const size_t n, const F& value) : data(m, std::vector<F>(n, value)), num_rows(m), num_cols(n) {}
 		constexpr Matrix(const size_t m, const size_t n) : Matrix(m, n, zero) {}
-		constexpr Matrix(std::initializer_list<std::initializer_list<TData>> list) : num_cols(0) {
+		constexpr Matrix(std::initializer_list<std::initializer_list<F>> list) : num_cols(0) {
 			num_rows = list.size();
 			bool num_cols_set = false;
-			for (const std::initializer_list<TData>& row : list) {
+			for (const std::initializer_list<F>& row : list) {
 				data.push_back(row);
 				if (!num_cols_set) {
 					num_cols = row.size();
@@ -395,11 +416,11 @@ namespace lingebra {
 		
 		// random generation (only for finite division rings)
 		template <class TEngine>
-		static Matrix make_random(TEngine& engine, const size_t m, const size_t n) requires ModIntLike<TData> {
+		static Matrix make_random(TEngine& engine, const size_t m, const size_t n) requires ModIntLike<F> {
 			Matrix mat(m, n);
 			for (size_t i = 0; i < m; ++i) {
 				for (size_t j = 0; j < n; ++j) {
-					mat(i, j) = TData::make_random(engine);
+					mat(i, j) = F::make_random(engine);
 				}
 			}
 			return mat;
@@ -410,27 +431,23 @@ namespace lingebra {
 			assign(num_rows, num_cols, zero);
 		}
 
-		constexpr void assign(const size_t m, const size_t n) {
-			assign(m, n, zero);
+		constexpr void assign(const size_t m, const size_t n, const F& value = zero) {
+			data.assign(m, std::vector<F>(n, value));
 		}
 
-		constexpr void assign(const size_t m, const size_t n, const TData& value) {
-			data.assign(m, std::vector<TData>(n, value));
-		}
-
-		constexpr TData& operator()(const size_t row, const size_t col) noexcept {
+		constexpr F& operator()(const size_t row, const size_t col) noexcept {
 			return data[row][col];
 		}
 
-		constexpr const TData& operator()(const size_t row, const size_t col) const noexcept {
+		constexpr const F& operator()(const size_t row, const size_t col) const noexcept {
 			return data[row][col];
 		}
 
-		constexpr std::vector<std::vector<TData>>& rows() noexcept {
+		constexpr std::vector<std::vector<F>>& rows() noexcept {
 			return data;
 		}
 
-		constexpr const std::vector<std::vector<TData>>& rows() const noexcept {
+		constexpr const std::vector<std::vector<F>>& rows() const noexcept {
 			return data;
 		}
 
@@ -442,8 +459,9 @@ namespace lingebra {
 			return num_cols;
 		}
 
-		constexpr void swap_rows(const size_t a, const size_t b) noexcept(std::is_nothrow_swappable_v<std::vector<TData>>) {
-			std::swap(data[a], data[b]);
+		constexpr void swap_rows(const size_t a, const size_t b) noexcept(std::is_nothrow_swappable_v<std::vector<F>>) {
+			using std::swap;
+			swap(data[a], data[b]);
 		}
 
 		constexpr bool is_square() const noexcept {
@@ -483,7 +501,7 @@ namespace lingebra {
 
 			for (size_t i = 0; i < num_rows; ++i) {
 				for (size_t j = 0; j < other.num_cols; ++j) {
-					TData sum = make_zero<TData>();
+					F sum = make_zero<F>();
 
 					for (size_t k = 0; k < num_cols; ++k) {
 						sum += (*this)(i, k) * other(k, j);
@@ -496,7 +514,7 @@ namespace lingebra {
 			return result;
 		}
 
-		constexpr Matrix& operator*=(const TData& scalar) {
+		constexpr Matrix& operator*=(const F& scalar) {
 			for (size_t i = 0; i < num_rows; ++i) {
 				for (size_t j = 0; j < num_cols; ++j) {
 					(*this)(i, j) *= scalar;
@@ -504,7 +522,7 @@ namespace lingebra {
 			}
 			return *this;
 		}
-		constexpr Matrix& operator/=(const TData& scalar) {
+		constexpr Matrix& operator/=(const F& scalar) {
 			for (size_t i = 0; i < num_rows; ++i) {
 				for (size_t j = 0; j < num_cols; ++j) {
 					(*this)(i, j) /= scalar;
@@ -513,16 +531,16 @@ namespace lingebra {
 			return *this;
 		}
 
-		constexpr Matrix operator*(const TData& scalar) const {
+		constexpr Matrix operator*(const F& scalar) const {
 			Matrix temp(*this);
 			temp *= scalar;
 			return temp;
 		}
-		constexpr friend Matrix operator*(const TData& scalar, const Matrix& vec) {
+		constexpr friend Matrix operator*(const F& scalar, const Matrix& vec) {
 			return vec * scalar;
 		}
 
-		constexpr Matrix operator/(const TData& scalar) const {
+		constexpr Matrix operator/(const F& scalar) const {
 			Matrix temp(*this);
 			temp /= scalar;
 			return temp;
@@ -530,16 +548,16 @@ namespace lingebra {
 	};
 
 
-	template <field TData>
-	Vector<TData> operator*(const Matrix<TData>& matrix, const Vector<TData>& vector) {
+	template <field F>
+	Vector<F> operator*(const Matrix<F>& matrix, const Vector<F>& vector) {
 		if (matrix.n() != vector.dim()) {
 			throw std::runtime_error("Uncompatible matrix, vector size");
 		}
 
-		Vector<TData> result(matrix.m());
+		Vector<F> result(matrix.m());
 
 		for (size_t i = 0; i < matrix.m(); ++i) {
-			TData sum = make_zero<TData>();
+			F sum = make_zero<F>();
 			for (size_t j = 0; j < matrix.n(); ++j) {
 				sum += matrix(i, j) * vector[j];
 			}
@@ -549,16 +567,16 @@ namespace lingebra {
 		return result;
 	}
 
-	template <field TData>
-	Vector<TData> operator*(const Vector<TData>& vector, const Matrix<TData>& matrix) {
+	template <field F>
+	Vector<F> operator*(const Vector<F>& vector, const Matrix<F>& matrix) {
 		if (matrix.m() != vector.dim()) {
 			throw std::runtime_error("Uncompatible matrix, vector size");
 		}
 
-		Vector<TData> result(matrix.n());
+		Vector<F> result(matrix.n());
 
 		for (size_t i = 0; i < matrix.n(); ++i) {
-			TData sum = make_zero<TData>();
+			F sum = make_zero<F>();
 			for (size_t j = 0; j < matrix.m(); ++j) {
 				sum += vector[j] * matrix(j, i);
 			}
@@ -574,48 +592,53 @@ namespace lingebra {
 		explicit singular_matrix_exception() : runtime_error("The matrix is singular!") {}
 	};
 
-
-	/* Solves the system Ax = b using the gassian elimination, the result is then stored in the vector b, it modifies the matrix so make a copy if you want to keep it */
-	template <field T>
-	void solve_gaussian_elimination(Matrix<T>& matrix, Vector<T>& b) {
-		if (!matrix.is_square())
-			throw singular_matrix_exception();
+	/* Solves the system Ax = b using the gaussian elimination */
+	template <field F>
+	void solve_gaussian_elimination(Matrix<F>& matrix, Vector<F>& b) {
 		const size_t n = matrix.n();
 		if (b.dim() != n)
 			throw std::runtime_error("Size mismatch in solve_gaussian_elimination");
 
-		for (size_t i = 0; i < n; ++i) {
-			// ensure that there is no zero on the diagonal
-			if (is_zero(matrix(i, i))) {
-				bool swapped = false;
-				for (size_t j = i + 1; j < n; ++j) {
-					if (is_zero(matrix(j, i))) continue;
-					matrix.swap_rows(i, j);
-					b.swap_values(i, j);
-					swapped = true;
-					break;
+		const size_t m = matrix.m();
+
+		size_t h = 0;
+		size_t k = 0;
+
+		while (h < m && k < n) {
+			// find k-th pivot
+			size_t i_max = h;
+			for (size_t i = h + 1; i < m; ++i) {
+				if (matrix(i, k) > matrix(i_max, k)) i_max = i;
+			}
+			if (is_zero(matrix(i_max, k))) {
+				// no pivot in column => singular matrix
+				throw singular_matrix_exception();
+			}
+
+			matrix.swap_rows(h, i_max);
+			b.swap_values(h, i_max);
+			F global_f = make_one<F>() / matrix(h, k);
+	
+			// make the pivot equal one
+			matrix(h, k) = make_one<F>();
+			for (size_t j = k + 1; j < n; ++j) {
+				matrix(h, j) *= global_f;
+			}
+			b[h] *= global_f;
+
+			// eliminate
+			for (size_t i = 0; i < m; ++i) {
+				if (i == h) continue;
+				F local_f = matrix(i, k);
+				matrix(i, k) = make_zero<F>();
+				for (size_t j = k + 1; j < n; ++j) {
+					matrix(i, j) -= matrix(h, j) * local_f;
 				}
-				if (!swapped) throw singular_matrix_exception();
+				b[i] -= b[h] * local_f;
 			}
 
-			// normalize the row
-			const T factor = make_one<T>() / matrix(i, i);
-			for (size_t j = i + 1; j < n; ++j) { // we wont need the previous values anymore since we have nonzero diagonal
-				matrix(i, j) *= factor;
-			}
-			b[i] *= factor;
-
-			for (size_t j = 0; j < n; ++j) {
-				if (i == j) continue;
-				const T factor = matrix(j, i);
-
-				if (is_zero(factor)) continue;
-
-				for (size_t k = i + 1; k < n; ++k) {
-					matrix(j, k) -= factor * matrix(i, k);
-				}
-				b[j] -= factor * b[i];
-			}
+			++h;
+			++k;
 		}
 	}
 

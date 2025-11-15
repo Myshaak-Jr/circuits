@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "node.h"
+#include "part_base.h"
 
 
 template <std::size_t N>

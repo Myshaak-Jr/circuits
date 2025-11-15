@@ -2,21 +2,26 @@
 
 #include <vector>
 
-#include "part_base.h"
+#include "types.h"
 
 
 class Node {
 private:
-	size_t row_id;
+	real_t voltage;
+	size_t node_id;
 	bool ground;
 
 public:
-	Node();
-	~Node() = default;
+	constexpr Node() : voltage(0.0), node_id(0), ground(false) {}
+	constexpr ~Node() = default;
 
-	void set_row_id(size_t row_id);
-	size_t get_row_id() const;
+	constexpr void set_voltage(real_t voltage) { this->voltage = voltage; }
+	constexpr real_t get_voltage() const { return voltage; }
 
-	void set_ground();
-	bool is_ground() const;
+	constexpr void set_row_id(size_t node_id) { this->node_id = node_id; }
+	constexpr size_t get_node_id() const { return node_id; }
+
+	constexpr void set_ground() { ground = true; }
+	constexpr void reset_ground() { ground = false; }
+	constexpr bool is_ground() const { return ground; }
 };
