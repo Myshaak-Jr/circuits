@@ -18,13 +18,13 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\circuit\resistor.cpp">
+    <ClCompile Include="src\circuit\parts\resistor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\circuit\circuit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\circuit\voltage_source.cpp">
+    <ClCompile Include="src\circuit\parts\voltage_source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\circuit\n_pin_part.h">
@@ -33,18 +33,24 @@
     <ClCompile Include="src\circuit\circuit_matrix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\circuit\scope.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\circuit\util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\circuit\node.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\circuit\part_base.h">
+    <ClInclude Include="src\circuit\part.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\circuit\resistor.h">
+    <ClInclude Include="src\circuit\parts\resistor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\circuit\voltage_source.h">
+    <ClInclude Include="src\circuit\parts\voltage_source.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\circuit\circuit.h">
@@ -60,6 +66,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\circuit\types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\circuit\scope.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\circuit\util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

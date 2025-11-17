@@ -1,8 +1,12 @@
-#include "./circuit.h"
+#include "circuit.h"
+#include "util.h"
 
 
-Circuit::Circuit(real_t timestep) : timestep(timestep), matrix() {
-	ground = add_part<VoltageSource>(0.0f);
+Circuit::Circuit(real_t timestep, const fs::path& scope_export_path) :
+	timestep(timestep),
+	matrix(),
+	scope_export_path(scope_export_path / make_timestamp()) {
+	ground = add_part<VoltageSource>("GND", 0.0f);
 }
 
 
@@ -62,10 +66,19 @@ void Circuit::update_parts() {
 }
 
 void Circuit::run_for_steps(size_t num_steps) {
+	real_t t = 0;
+
 	for (size_t frame = 0; frame < num_steps; ++frame) {
 		update_parts();
 
-		// TODO: record the data in the scopes etc.
+		for (const auto& scope : voltage_scopes) {
+			scope->record_voltage(t);
+		}
+		for (const auto& scope : current_scopes) {
+			scope->record_current(t);
+		}
+
+		t += timestep;
 	}
 }
 
@@ -74,18 +87,19 @@ void Circuit::run_for_seconds(real_t secs) {
 }
 
 // scopes
-void Circuit::scope_voltage(const ConstPin& a, const ConstPin& b, const fs::path& csv_table_dst) {
-	
+void Circuit::scope_voltage(const ConstPin& a, const ConstPin& b) {
+	voltage_scopes.push_back(std::make_unique<VoltageScope>(a, b, scope_export_path));
 }
 
-void Circuit::scope_current(const ConstPin& a, const ConstPin& b, const fs::path& csv_table_dst) {
-
-}
-
-void Circuit::scope_current(NPinPart<2>* part, const fs::path& csv_table_dst) {
-
+void Circuit::scope_current(const ConstPin& a, const ConstPin& b) {
+	current_scopes.push_back(std::make_unique<CurrentScope>(a, b, scope_export_path));
 }
 
 void Circuit::export_tables() const {
-
+	for (const auto& scope : voltage_scopes) {
+		scope->export_data();
+	}
+	for (const auto& scope : current_scopes) {
+		scope->export_data();
+	}
 }
