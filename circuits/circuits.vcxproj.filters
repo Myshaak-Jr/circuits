@@ -48,6 +48,9 @@
     <ClCompile Include="src\circuit\parts\current_source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\circuit\node.h">
@@ -74,7 +77,7 @@
     <ClInclude Include="src\circuit\pin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\circuit\types.h">
+    <ClInclude Include="src\circuit\scalar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\circuit\scope.h">
@@ -90,6 +93,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\circuit\parts\current_source.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

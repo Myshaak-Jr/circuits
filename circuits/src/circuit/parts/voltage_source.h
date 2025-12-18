@@ -1,7 +1,12 @@
 #pragma once
 
 
+#include "../circuit_matrix.h"
 #include "../n_pin_part.h"
+#include "../part.h"
+#include "../pin.h"
+#include "../scalar.h"
+#include <string>
 
 
 class VoltageSource : public NPinPart<1> {
@@ -12,14 +17,16 @@ private:
 	scalar current;
 
 public:
-	explicit VoltageSource(const std::string& name, scalar voltage);
+	explicit VoltageSource(const std::string &name, scalar voltage);
 	~VoltageSource() noexcept;
 
-	void pre_stamp(CircuitMatrix& matrix, const StampParams& params) override;
-	void stamp(CircuitMatrix& matrix, const StampParams& params) const override;
-	void post_stamp(const CircuitMatrix& matrix, const StampParams& params) override;
+	void pre_stamp(CircuitMatrix &matrix, const StampParams &params) override;
+	void stamp(CircuitMatrix &matrix, const StampParams &params) const override;
+	void post_stamp(const CircuitMatrix &matrix, const StampParams &params) override;
 
-	scalar get_current_between(const ConstPin& a, const ConstPin& b) const override;
+	scalar get_current_between(const ConstPin &a, const ConstPin &b) const override;
+
+	bool requires_matrix_row() const override { return !pin().node->is_ground; }
 };
 
 
@@ -31,12 +38,14 @@ private:
 	scalar current;
 
 public:
-	explicit VoltageSource2Pin(const std::string& name, scalar voltage);
+	explicit VoltageSource2Pin(const std::string &name, scalar voltage);
 	~VoltageSource2Pin() noexcept;
 
-	void pre_stamp(CircuitMatrix& matrix, const StampParams& params) override;
-	void stamp(CircuitMatrix& matrix, const StampParams& params) const override;
-	void post_stamp(const CircuitMatrix& matrix, const StampParams& params) override;
+	void pre_stamp(CircuitMatrix &matrix, const StampParams &params) override;
+	void stamp(CircuitMatrix &matrix, const StampParams &params) const override;
+	void post_stamp(const CircuitMatrix &matrix, const StampParams &params) override;
 
-	scalar get_current_between(const ConstPin& a, const ConstPin& b) const override;
+	scalar get_current_between(const ConstPin &a, const ConstPin &b) const override;
+
+	constexpr bool requires_matrix_row() const override { return true; }
 };

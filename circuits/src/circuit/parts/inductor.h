@@ -1,6 +1,11 @@
 #pragma once
 
+#include "../circuit_matrix.h"
 #include "../n_pin_part.h"
+#include "../part.h"
+#include "../pin.h"
+#include "../scalar.h"
+#include <string>
 
 
 class Inductor : public NPinPart<2> {
@@ -10,12 +15,14 @@ private:
 	size_t branch_id;
 
 public:
-	Inductor(const std::string& name, scalar inductance);
+	Inductor(const std::string &name, scalar inductance);
 	~Inductor() noexcept = default;
 
-	void pre_stamp(CircuitMatrix& matrix, const StampParams& params) override;
-	void stamp(CircuitMatrix& matrix, const StampParams& params) const override;
-	void post_stamp(const CircuitMatrix& matrix, const StampParams& params) override;
+	void pre_stamp(CircuitMatrix &matrix, const StampParams &params) override;
+	void stamp(CircuitMatrix &matrix, const StampParams &params) const override;
+	void post_stamp(const CircuitMatrix &matrix, const StampParams &params) override;
 
-	scalar get_current_between(const ConstPin& a, const ConstPin& b) const override;
+	scalar get_current_between(const ConstPin &a, const ConstPin &b) const override;
+
+	constexpr bool requires_matrix_row() const override { return true; }
 };

@@ -2,9 +2,9 @@
 
 #include <vector>
 
-#include "types.h"
 #include "../lingebra/lingebra.h"
 #include "pin.h"
+#include "scalar.h"
 
 
 class CircuitMatrix {
@@ -27,13 +27,13 @@ public:
 
 	// resize & clear
 	void init();
-	
+
 	// stamps, the current always flows a -> b
 
-	void stamp_template_I_out_LHS(const ConstPin& a, const ConstPin& b, size_t branch_id, scalar g_like_value, scalar cross_value);
-	void stamp_template_LHS(const ConstPin& a, const ConstPin& b, scalar value);
+	void stamp_template_I_out_LHS(const ConstPin &a, const ConstPin &b, size_t branch_id, scalar g_like_value, scalar cross_value);
+	void stamp_template_LHS(const ConstPin &a, const ConstPin &b, scalar value);
 	void stamp_template_RHS(size_t branch_id, scalar value);
-	void stamp_template_RHS(const ConstPin& a, const ConstPin& b, scalar value);
+	void stamp_template_RHS(const ConstPin &a, const ConstPin &b, scalar value);
 
 
 	//void stamp_conductance(const ConstPin& a, const ConstPin& b, scalar conductance);

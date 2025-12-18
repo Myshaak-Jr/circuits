@@ -1,8 +1,8 @@
 #pragma once
 
 #include <array>
-#include <stdexcept>
 #include <format>
+#include <stdexcept>
 
 #include "node.h"
 #include "part.h"
@@ -11,7 +11,7 @@
 template <size_t N>
 class NPinPart : public Part {
 private:
-	std::array<Node*, N> nodes;
+	std::array<Node *, N> nodes;
 
 	std::string name;
 
@@ -31,7 +31,7 @@ protected:
 	}
 
 public:
-	NPinPart(const std::string& name) : name(name) {
+	NPinPart(const std::string &name) : name(name) {
 		nodes.fill(nullptr);
 		update_pin_names();
 	};
@@ -39,24 +39,24 @@ public:
 
 	constexpr size_t pin_count() const noexcept override { return N; }
 
-	void set_node(size_t pin_id, Node* node) override {
+	void set_node(size_t pin_id, Node *node) override {
 		assert_pin_id(pin_id);
 		nodes[pin_id] = node;
 	}
 
 	Pin pin(size_t pin_id) override {
 		assert_pin_id(pin_id);
-		return Pin{pin_id, nodes[pin_id], this, pin_names[pin_id]};
+		return Pin{ pin_id, nodes[pin_id], this, pin_names[pin_id] };
 	}
 
 	ConstPin pin(size_t pin_id) const override {
 		assert_pin_id(pin_id);
-		return ConstPin{pin_id, nodes[pin_id], this, pin_names[pin_id]};
+		return ConstPin{ pin_id, nodes[pin_id], this, pin_names[pin_id] };
 	}
 
-	const std::string& get_name() const override { return name; }
+	const std::string &get_name() const override { return name; }
 
-	void set_name(const std::string& name) override {
+	void set_name(const std::string &name) override {
 		this->name = name;
 		update_pin_names();
 	}

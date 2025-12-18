@@ -1,11 +1,20 @@
 #pragma once
 
-#include <vector>
-#include <stdexcept>
-#include <limits>
-#include <cmath>
+#include <algorithm>
+#include <concepts>
+#include <cstdint>
+#include <format>
+#include <initializer_list>
+#include <iostream>
 #include <iterator>
+#include <limits>
 #include <random>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 
 namespace lingebra {
@@ -19,12 +28,12 @@ namespace lingebra {
 	concept has_abs_static_method = requires (const T & a) { { T::abs(a) } -> std::convertible_to<T>; };
 
 	template <has_abs_method T>
-	constexpr T abs(const T& x) {
+	constexpr T abs(const T &x) {
 		return x.abs();
 	}
 
 	template <has_abs_static_method T>
-	constexpr T abs(const T& x) {
+	constexpr T abs(const T &x) {
 		return T::abs(x);
 	}
 
@@ -41,7 +50,7 @@ namespace lingebra {
 	// modulo integer
 
 	template <size_t N>
-	requires (N > 1)
+		requires (N > 1)
 	class ModInt {
 	public:
 		using value_type =
@@ -54,10 +63,10 @@ namespace lingebra {
 		static constexpr value_type n = static_cast<value_type>(N);
 
 	public:
-		constexpr ModInt(value_type value = 0) noexcept : value(((value% n) + n) % n) {}
+		constexpr ModInt(value_type value = 0) noexcept : value(((value %n) + n) % n) {}
 
 		template <class TEngine>
-		static ModInt make_random(TEngine& engine) {
+		static ModInt make_random(TEngine &engine) {
 			std::uniform_int_distribution<uint64_t> dist(0, static_cast<uint16_t>(get_n()) - 1);
 			return ModInt(static_cast<value_type>(dist(engine)));
 		}
@@ -65,24 +74,24 @@ namespace lingebra {
 		constexpr value_type get() const noexcept { return value; }
 		constexpr static value_type get_n() noexcept { return n; }
 
-		friend auto operator<=>(const ModInt&, const ModInt&) = default;
+		friend auto operator<=>(const ModInt &, const ModInt &) = default;
 
-		constexpr ModInt& operator+=(const ModInt& other) noexcept {
+		constexpr ModInt &operator+=(const ModInt &other) noexcept {
 			value += other.value;
 			if (value >= n) value -= n;
 			return *this;
 		}
-		constexpr ModInt& operator-=(const ModInt& other) noexcept {
+		constexpr ModInt &operator-=(const ModInt &other) noexcept {
 			value -= other.value;
 			if (value < 0) value += n;
 			return *this;
 		}
-		constexpr ModInt& operator*=(const ModInt& other) noexcept {
+		constexpr ModInt &operator*=(const ModInt &other) noexcept {
 			value = (static_cast<uint64_t>(value) * other.value) % n;
 			return *this;
 		}
 
-		constexpr ModInt& operator++() noexcept {
+		constexpr ModInt &operator++() noexcept {
 			if (++value == n) value = 0;
 			return *this;
 		}
@@ -92,17 +101,17 @@ namespace lingebra {
 			return temp;
 		}
 
-		constexpr ModInt operator+(const ModInt& other) const noexcept {
+		constexpr ModInt operator+(const ModInt &other) const noexcept {
 			ModInt temp = *this;
 			temp += other;
 			return temp;
 		}
-		constexpr ModInt operator-(const ModInt& other) const noexcept {
+		constexpr ModInt operator-(const ModInt &other) const noexcept {
 			ModInt temp = *this;
 			temp -= other;
 			return temp;
 		}
-		constexpr ModInt operator*(const ModInt& other) const noexcept {
+		constexpr ModInt operator*(const ModInt &other) const noexcept {
 			ModInt temp = *this;
 			temp *= other;
 			return temp;
@@ -135,12 +144,12 @@ namespace lingebra {
 			return ModInt(t);
 		}
 
-		constexpr ModInt& operator/=(const ModInt& other) noexcept requires (is_prime(N)) {
+		constexpr ModInt &operator/=(const ModInt &other) noexcept requires (is_prime(N)) {
 			(*this) *= other.inverse();
 			return *this;
 		}
 
-		constexpr ModInt operator/(const ModInt& other) noexcept requires (is_prime(N)) {
+		constexpr ModInt operator/(const ModInt &other) noexcept requires (is_prime(N)) {
 			ModInt temp = *this;
 			temp /= other;
 			return temp;
@@ -175,12 +184,12 @@ namespace lingebra {
 		}
 		else {
 			static_assert(std::constructible_from<T, int>);
-			return T{0};
+			return T{ 0 };
 		}
 	}
 
 	template <has_zero T>
-	constexpr bool is_zero(const T& a) {
+	constexpr bool is_zero(const T &a) {
 		if constexpr (requires (T x) { { T::is_zero(x) } -> std::convertible_to<bool>; }) {
 			return T::is_zero(a);
 		}
@@ -211,22 +220,22 @@ namespace lingebra {
 		}
 		else {
 			static_assert(std::constructible_from<T, int>);
-			return T{1};
+			return T{ 1 };
 		}
 	}
 
 	template <class T>
 	concept additive =
-		requires (T a, T b) { { a + b } -> std::convertible_to<T>; }&&
-		requires (T a, T b) { { b + a } -> std::convertible_to<T>; }&&
-		requires (T a, T b) { { a - b } -> std::convertible_to<T>; }&&
+		requires (T a, T b) { { a + b } -> std::convertible_to<T>; } &&
+		requires (T a, T b) { { b + a } -> std::convertible_to<T>; } &&
+		requires (T a, T b) { { a - b } -> std::convertible_to<T>; } &&
 		requires (T a, T b) { { b - a } -> std::convertible_to<T>; };
 
 	template <class T>
 	concept multiplicative =
-		requires (T a, T b) { { a* b } -> std::convertible_to<T>; }&&
-		requires (T a, T b) { { b* a } -> std::convertible_to<T>; }&&
-		requires (T a, T b) { { a / b } -> std::convertible_to<T>; }&&
+		requires (T a, T b) { { a *b } -> std::convertible_to<T>; } &&
+		requires (T a, T b) { { b *a } -> std::convertible_to<T>; } &&
+		requires (T a, T b) { { a / b } -> std::convertible_to<T>; } &&
 		requires (T a, T b) { { b / a } -> std::convertible_to<T>; };
 
 	template <class T>
@@ -247,24 +256,24 @@ namespace lingebra {
 
 	public:
 		constexpr Vector() noexcept = default;
-		constexpr Vector(const size_t size, const F& value) : data(size, value) {}
-		constexpr explicit Vector(const size_t size) : Vector(size, zero) {}
+		constexpr Vector(size_t size, const F &value) : data(size, value) {}
+		constexpr explicit Vector(size_t size) : Vector(size, zero) {}
 		constexpr Vector(std::initializer_list<F> list) : data(list) {}
-		constexpr Vector(const std::vector<F>& data) : data(data) {}
+		constexpr Vector(const std::vector<F> &data) : data(data) {}
 		template <std::input_iterator Iter>
 		constexpr Vector(Iter first, Iter last) : data(first, last) {}
 
-		constexpr Vector(const Vector&) = default;
-		constexpr Vector(Vector&&) noexcept = default;
-		constexpr Vector& operator=(const Vector&) = default;
-		constexpr Vector& operator=(Vector&&) noexcept = default;
+		constexpr Vector(const Vector &) = default;
+		constexpr Vector(Vector &&) noexcept = default;
+		constexpr Vector &operator=(const Vector &) = default;
+		constexpr Vector &operator=(Vector &&) noexcept = default;
 
 		~Vector() = default;
 
 
 		// random generation (only for finite division rings)
 		template <class TEngine>
-		static Vector make_random(TEngine& engine, const size_t size) requires ModIntLike<F> {
+		static Vector make_random(TEngine &engine, size_t size) requires ModIntLike<F> {
 			Vector vec(size);
 			for (size_t i = 0; i < size; ++i) {
 				vec[i] = F::make_random(engine);
@@ -272,20 +281,19 @@ namespace lingebra {
 			return vec;
 		}
 
-
 		constexpr void clear() {
 			assign(data.size(), zero);
 		}
 
-		constexpr void assign(const size_t new_size, const F& value = zero) {
+		constexpr void assign(size_t new_size, const F &value = zero) {
 			data.assign(new_size, value);
 		}
 
-		constexpr F& operator[](const size_t pos) noexcept {
+		constexpr F &operator[](size_t pos) noexcept {
 			return data[pos];
 		}
 
-		constexpr const F& operator[](const size_t pos) const noexcept {
+		constexpr const F &operator[](size_t pos) const noexcept {
 			return data[pos];
 		}
 
@@ -293,16 +301,33 @@ namespace lingebra {
 			return data.size();
 		}
 
-		constexpr void swap_values(const size_t a, const size_t b) noexcept(std::is_nothrow_swappable_v<F>) {
+		constexpr void swap_values(size_t a, size_t b) noexcept(std::is_nothrow_swappable_v<F>) {
 			using std::swap;
 			swap(data[a], data[b]);
 		}
 
-		constexpr bool operator==(const Vector& other) const {
+		constexpr std::string repr() const {
+			std::stringstream ss;
+			for (size_t i = 0; i < data.size(); ++i) {
+				ss << (i == 0 ? "[" : ", ");
+
+				if constexpr (std::floating_point<F>) {
+					ss << std::format("{:.3f}", data[i]);
+				}
+				else {
+					ss << data[i];
+				}
+			}
+			ss << "]";
+
+			return ss.str();
+		}
+
+		constexpr bool operator==(const Vector &other) const {
 			return data == other.data;
 		}
 
-		constexpr Vector& operator+=(const Vector& other) {
+		constexpr Vector &operator+=(const Vector &other) {
 			if (dim() != other.dim()) {
 				throw std::runtime_error("Vector must be of the same dimension");
 			}
@@ -314,13 +339,13 @@ namespace lingebra {
 			return *this;
 		}
 
-		constexpr Vector operator+(const Vector& other) const {
+		constexpr Vector operator+(const Vector &other) const {
 			Vector result(*this);
 			result += other;
 			return result;
 		}
 
-		constexpr F operator*(const Vector& other) const {
+		constexpr F operator*(const Vector &other) const {
 			if (dim() != other.dim()) {
 				throw std::runtime_error("Vector must be of the same dimension");
 			}
@@ -334,29 +359,29 @@ namespace lingebra {
 			return sum;
 		}
 
-		constexpr Vector& operator*=(const F& scalar) {
+		constexpr Vector &operator*=(const F &scalar) {
 			for (size_t i = 0; i < dim(); ++i) {
 				data[i] *= scalar;
 			}
 			return *this;
 		}
-		constexpr Vector& operator/=(const F& scalar) {
+		constexpr Vector &operator/=(const F &scalar) {
 			for (size_t i = 0; i < dim(); ++i) {
 				data[i] /= scalar;
 			}
 			return *this;
 		}
 
-		constexpr Vector operator*(const F& scalar) const {
+		constexpr Vector operator*(const F &scalar) const {
 			Vector temp(*this);
 			temp *= scalar;
 			return temp;
 		}
-		constexpr friend Vector operator*(const F& scalar, const Vector& vec) {
+		constexpr friend Vector operator*(const F &scalar, const Vector &vec) {
 			return vec * scalar;
 		}
 
-		constexpr Vector operator/(const F& scalar) const {
+		constexpr Vector operator/(const F &scalar) const {
 			Vector temp(*this);
 			temp /= scalar;
 			return temp;
@@ -377,7 +402,7 @@ namespace lingebra {
 		static constexpr F zero = make_zero<F>();
 
 	public:
-		constexpr Matrix(const std::vector<std::vector<F>>& data) : data(data) {
+		constexpr Matrix(const std::vector<std::vector<F>> &data) : data(data) {
 			num_rows = data.size();
 			if (num_rows != 0) {
 				num_cols = data[0].size();
@@ -387,12 +412,12 @@ namespace lingebra {
 			}
 		}
 		constexpr Matrix() noexcept : num_rows(0), num_cols(0) {}
-		constexpr Matrix(const size_t m, const size_t n, const F& value) : data(m, std::vector<F>(n, value)), num_rows(m), num_cols(n) {}
-		constexpr Matrix(const size_t m, const size_t n) : Matrix(m, n, zero) {}
+		constexpr Matrix(size_t m, size_t n, const F &value) : data(m, std::vector<F>(n, value)), num_rows(m), num_cols(n) {}
+		constexpr Matrix(size_t m, size_t n) : Matrix(m, n, zero) {}
 		constexpr Matrix(std::initializer_list<std::initializer_list<F>> list) : num_cols(0) {
 			num_rows = list.size();
 			bool num_cols_set = false;
-			for (const std::initializer_list<F>& row : list) {
+			for (const std::initializer_list<F> &row : list) {
 				data.push_back(row);
 				if (!num_cols_set) {
 					num_cols = row.size();
@@ -406,17 +431,17 @@ namespace lingebra {
 			}
 		}
 
-		constexpr Matrix(const Matrix&) = default;
-		constexpr Matrix(Matrix&&) noexcept = default;
-		constexpr Matrix& operator=(const Matrix&) = default;
-		constexpr Matrix& operator=(Matrix&&) noexcept = default;
+		constexpr Matrix(const Matrix &) = default;
+		constexpr Matrix(Matrix &&) noexcept = default;
+		constexpr Matrix &operator=(const Matrix &) = default;
+		constexpr Matrix &operator=(Matrix &&) noexcept = default;
 
 		~Matrix() = default;
 
-		
+
 		// random generation (only for finite division rings)
 		template <class TEngine>
-		static Matrix make_random(TEngine& engine, const size_t m, const size_t n) requires ModIntLike<F> {
+		static Matrix make_random(TEngine &engine, size_t m, size_t n) requires ModIntLike<F> {
 			Matrix mat(m, n);
 			for (size_t i = 0; i < m; ++i) {
 				for (size_t j = 0; j < n; ++j) {
@@ -431,25 +456,25 @@ namespace lingebra {
 			assign(num_rows, num_cols, zero);
 		}
 
-		constexpr void assign(const size_t m, const size_t n, const F& value = zero) {
+		constexpr void assign(size_t m, size_t n, const F &value = zero) {
 			num_rows = m;
 			num_cols = n;
 			data.assign(m, std::vector<F>(n, value));
 		}
 
-		constexpr F& operator()(const size_t row, const size_t col) noexcept {
+		constexpr F &operator()(size_t row, size_t col) noexcept {
 			return data[row][col];
 		}
 
-		constexpr const F& operator()(const size_t row, const size_t col) const noexcept {
+		constexpr const F &operator()(size_t row, size_t col) const noexcept {
 			return data[row][col];
 		}
 
-		constexpr std::vector<std::vector<F>>& rows() noexcept {
+		constexpr std::vector<std::vector<F>> &rows() noexcept {
 			return data;
 		}
 
-		constexpr const std::vector<std::vector<F>>& rows() const noexcept {
+		constexpr const std::vector<std::vector<F>> &rows() const noexcept {
 			return data;
 		}
 
@@ -461,7 +486,39 @@ namespace lingebra {
 			return num_cols;
 		}
 
-		constexpr void swap_rows(const size_t a, const size_t b) noexcept(std::is_nothrow_swappable_v<std::vector<F>>) {
+		constexpr std::string repr() const {
+			size_t max_length = 0;
+			for (size_t i = 0; i < num_rows; ++i) {
+				for (size_t j = 0; j < num_cols; ++j) {
+					auto len = std::to_string(data[i][j]).length();
+					max_length = std::max(len, max_length);
+				}
+			}
+
+			std::stringstream ss;
+			for (size_t i = 0; i < num_rows; ++i) {
+				ss << (i == 0 ? "[" : " ");
+
+				for (size_t j = 0; j < num_cols; ++j) {
+					ss << (j == 0 ? "[" : " ");
+
+					if constexpr (std::floating_point<F>) {
+						ss << std::format("{:> {}.3f}", data[i][j], max_length);
+					}
+					else {
+						ss << std::format("{:> {}}", data[i][j], max_length);
+					}
+				}
+
+				ss << "]";
+				if (i < num_rows - 1) ss << "\n";
+			}
+			ss << "]";
+
+			return ss.str();
+		}
+
+		constexpr void swap_rows(size_t a, size_t b) noexcept(std::is_nothrow_swappable_v<std::vector<F>>) {
 			using std::swap;
 			swap(data[a], data[b]);
 		}
@@ -470,11 +527,11 @@ namespace lingebra {
 			return num_rows == num_cols;
 		}
 
-		constexpr bool operator==(const Matrix& other) const {
+		constexpr bool operator==(const Matrix &other) const {
 			return data == other.data;
 		}
 
-		constexpr Matrix& operator+=(const Matrix& other) {
+		constexpr Matrix &operator+=(const Matrix &other) {
 			if (num_rows != other.num_rows || num_cols != other.num_cols) {
 				throw std::runtime_error("Matrices must be of the same size");
 			}
@@ -488,13 +545,13 @@ namespace lingebra {
 			return *this;
 		}
 
-		constexpr Matrix operator+(const Matrix& other) const {
+		constexpr Matrix operator+(const Matrix &other) const {
 			Matrix result(*this);
 			result += other;
 			return result;
 		}
 
-		constexpr Matrix operator*(const Matrix& other) const {
+		constexpr Matrix operator*(const Matrix &other) const {
 			if (num_cols != other.num_rows) {
 				throw std::runtime_error("Uncompatible matrices for matrix product");
 			}
@@ -516,7 +573,7 @@ namespace lingebra {
 			return result;
 		}
 
-		constexpr Matrix& operator*=(const F& scalar) {
+		constexpr Matrix &operator*=(const F &scalar) {
 			for (size_t i = 0; i < num_rows; ++i) {
 				for (size_t j = 0; j < num_cols; ++j) {
 					(*this)(i, j) *= scalar;
@@ -524,7 +581,7 @@ namespace lingebra {
 			}
 			return *this;
 		}
-		constexpr Matrix& operator/=(const F& scalar) {
+		constexpr Matrix &operator/=(const F &scalar) {
 			for (size_t i = 0; i < num_rows; ++i) {
 				for (size_t j = 0; j < num_cols; ++j) {
 					(*this)(i, j) /= scalar;
@@ -533,16 +590,16 @@ namespace lingebra {
 			return *this;
 		}
 
-		constexpr Matrix operator*(const F& scalar) const {
+		constexpr Matrix operator*(const F &scalar) const {
 			Matrix temp(*this);
 			temp *= scalar;
 			return temp;
 		}
-		constexpr friend Matrix operator*(const F& scalar, const Matrix& vec) {
+		constexpr friend Matrix operator*(const F &scalar, const Matrix &vec) {
 			return vec * scalar;
 		}
 
-		constexpr Matrix operator/(const F& scalar) const {
+		constexpr Matrix operator/(const F &scalar) const {
 			Matrix temp(*this);
 			temp /= scalar;
 			return temp;
@@ -551,7 +608,7 @@ namespace lingebra {
 
 
 	template <field F>
-	Vector<F> operator*(const Matrix<F>& matrix, const Vector<F>& vector) {
+	Vector<F> operator*(const Matrix<F> &matrix, const Vector<F> &vector) {
 		if (matrix.n() != vector.dim()) {
 			throw std::runtime_error("Uncompatible matrix, vector size");
 		}
@@ -570,7 +627,7 @@ namespace lingebra {
 	}
 
 	template <field F>
-	Vector<F> operator*(const Vector<F>& vector, const Matrix<F>& matrix) {
+	Vector<F> operator*(const Vector<F> &vector, const Matrix<F> &matrix) {
 		if (matrix.m() != vector.dim()) {
 			throw std::runtime_error("Uncompatible matrix, vector size");
 		}
@@ -596,12 +653,14 @@ namespace lingebra {
 
 	/* Solves the system Ax = b using the gaussian elimination */
 	template <field F>
-	void solve_gaussian_elimination(Matrix<F>& matrix, Vector<F>& b) {
-		const size_t n = matrix.n();
+	void solve_gaussian_elimination(Matrix<F> &matrix, Vector<F> &b) {
+		size_t n = matrix.n();
 		if (b.dim() != n)
 			throw std::runtime_error("Size mismatch in solve_gaussian_elimination");
 
-		const size_t m = matrix.m();
+		size_t m = matrix.m();
+
+
 
 		size_t h = 0;
 		size_t k = 0;
@@ -620,7 +679,7 @@ namespace lingebra {
 			matrix.swap_rows(h, i_max);
 			b.swap_values(h, i_max);
 			F global_f = make_one<F>() / matrix(h, k);
-	
+
 			// make the pivot equal one
 			matrix(h, k) = make_one<F>();
 			for (size_t j = k + 1; j < n; ++j) {

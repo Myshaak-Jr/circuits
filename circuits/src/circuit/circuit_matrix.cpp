@@ -16,7 +16,7 @@ void CircuitMatrix::init() {
 	rhs.assign(num_rows);
 }
 
-void CircuitMatrix::stamp_template_I_out_LHS(const ConstPin& a, const ConstPin& b, size_t branch_id, scalar g_like_value, scalar cross_value) {
+void CircuitMatrix::stamp_template_I_out_LHS(const ConstPin &a, const ConstPin &b, size_t branch_id, scalar g_like_value, scalar cross_value) {
 	matrix(branch_id, branch_id) += cross_value;
 
 	if (!a.node->is_ground) {
@@ -31,7 +31,7 @@ void CircuitMatrix::stamp_template_I_out_LHS(const ConstPin& a, const ConstPin& 
 	}
 }
 
-void CircuitMatrix::stamp_template_LHS(const ConstPin& a, const ConstPin& b, scalar value) {
+void CircuitMatrix::stamp_template_LHS(const ConstPin &a, const ConstPin &b, scalar value) {
 	const bool a_ground = a.node->is_ground;
 	const bool b_ground = b.node->is_ground;
 
@@ -57,7 +57,7 @@ void CircuitMatrix::stamp_template_RHS(size_t branch_id, scalar value) {
 	rhs[branch_id] += value;
 }
 
-void CircuitMatrix::stamp_template_RHS(const ConstPin& a, const ConstPin& b, scalar value) {
+void CircuitMatrix::stamp_template_RHS(const ConstPin &a, const ConstPin &b, scalar value) {
 	if (!a.node->is_ground) stamp_template_RHS(a.node->node_id, -value);
 	if (!b.node->is_ground) stamp_template_RHS(b.node->node_id, value);
 }

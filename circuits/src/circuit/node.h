@@ -1,8 +1,6 @@
 #pragma once
 
-#include <vector>
-
-#include "types.h"
+#include "scalar.h"
 
 
 struct Node {

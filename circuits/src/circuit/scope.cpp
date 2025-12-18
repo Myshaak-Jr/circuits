@@ -1,12 +1,17 @@
 #include "scope.h"
 
-#include <fstream>
 #include <format>
+#include <fstream>
 
 #include "part.h"
+#include "pin.h"
+#include "scalar.h"
+#include <filesystem>
+#include <iostream>
+#include <stdexcept>
 
 
-VoltageScope::VoltageScope(const ConstPin& a, const ConstPin& b, const fs::path& export_path) : a(a), b(b), export_path(export_path) {}
+VoltageScope::VoltageScope(const ConstPin &a, const ConstPin &b, const fs::path &export_path) : a(a), b(b), export_path(export_path) {}
 
 void VoltageScope::record_voltage(scalar time) {
 	scalar voltage = a.node->voltage - b.node->voltage;
@@ -14,41 +19,55 @@ void VoltageScope::record_voltage(scalar time) {
 }
 
 void VoltageScope::export_data() const {
-	fs::path filepath = export_path / std::format("voltage-between-{}-and-{}.csv", a.name, b.name);
+	fs::path filename = std::format("voltage-between-{}-and-{}.csv", a.name, b.name);
+	fs::path filepath = export_path / filename;
 	std::ofstream file(filepath);
 	if (!file.is_open()) {
 		throw std::runtime_error("Failed to open output file: " + filepath.string());
 	}
 
-	file << "Time, Voltage\n";
+	file << "Time,Voltage\n";
 
-	for (const DataEntry& entry : data) {
-		file << entry.time << ", " << entry.voltage << "\n";
+	for (const DataEntry &entry : data) {
+		file << entry.time << "," << entry.voltage << "\n";
 	}
+
+	file.close();
+
+	fs::remove(export_path.parent_path() / "latest" / filename);
+	fs::copy_file(filepath, export_path.parent_path() / "latest" / filename);
+
+	std::cout << "Exported voltage table " << filepath << "\n";
 }
 
 
-CurrentScope::CurrentScope(const ConstPin& a, const ConstPin& b, const fs::path& export_path) : a(a), b(b), export_path(export_path) {}
+CurrentScope::CurrentScope(const ConstPin &a, const ConstPin &b, const fs::path &export_path) : a(a), b(b), export_path(export_path) {}
 
 void CurrentScope::record_current(scalar time) {
-	const Part* part = a.owner;
+	const Part *part = a.owner;
 
 	scalar current = part->get_current_between(a, b);
 	data.push_back(DataEntry(time, current));
 }
 
 void CurrentScope::export_data() const {
-	fs::path filepath = export_path / std::format("current-between-{}-and-{}.csv", a.name, b.name);
+	fs::path filename = std::format("current-between-{}-and-{}.csv", a.name, b.name);
+	fs::path filepath = export_path / filename;
 	std::ofstream file(filepath);
 	if (!file.is_open()) {
 		throw std::runtime_error("Failed to open output file: " + filepath.string());
 	}
 
-	file << "Time, Current\n";
+	file << "Time,Current\n";
 
-	for (const DataEntry& entry : data) {
-		file << entry.time << ", " << entry.current << "\n";
+	for (const DataEntry &entry : data) {
+		file << entry.time << "," << entry.current << "\n";
 	}
 
 	file.close();
+
+	fs::remove(export_path.parent_path() / "latest" / filename);
+	fs::copy_file(filepath, export_path.parent_path() / "latest" / filename);
+
+	std::cout << "Exported current table " << filepath << "\n";
 }

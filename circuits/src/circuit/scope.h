@@ -1,10 +1,9 @@
 #pragma once
 
-#include <vector>
-#include <filesystem>
-
-#include "types.h"
 #include "pin.h"
+#include "scalar.h"
+#include <filesystem>
+#include <vector>
 
 
 namespace fs = std::filesystem;
@@ -25,7 +24,7 @@ private:
 	ConstPin b;
 
 public:
-	VoltageScope(const ConstPin& a, const ConstPin& b, const fs::path& export_path);
+	VoltageScope(const ConstPin &a, const ConstPin &b, const fs::path &export_path);
 
 	void record_voltage(scalar time);
 
@@ -47,7 +46,7 @@ private:
 	ConstPin b;
 
 public:
-	CurrentScope(const ConstPin& a, const ConstPin& b, const fs::path& export_path);
+	CurrentScope(const ConstPin &a, const ConstPin &b, const fs::path &export_path);
 
 	void record_current(scalar time);
 
