@@ -31,7 +31,7 @@ private:
 
 
 	Node *create_new_node();
-	void update_parts();
+	void update_parts(size_t step);
 
 public:
 	explicit Circuit(scalar timestep, const fs::path &scope_export_path = "./");

@@ -12,6 +12,7 @@ struct StampParams {
 	const ConstPin &ground;
 	scalar timestep;
 	scalar timestep_inv;
+	size_t step;
 };
 
 

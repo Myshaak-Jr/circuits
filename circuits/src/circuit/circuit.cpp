@@ -54,11 +54,12 @@ void Circuit::connect(const Pin &pin_a, const Pin &pin_b) {
 	}
 }
 
-void Circuit::update_parts() {
+void Circuit::update_parts(size_t step) {
 	StampParams params{
 	.ground = ground->pin(),
 	.timestep = timestep,
-	.timestep_inv = 1.0 / timestep
+	.timestep_inv = 1.0 / timestep,
+	.step = step
 	};
 
 	// prepare the matrix and count the number of rows needed
@@ -98,7 +99,7 @@ void Circuit::run_for_steps(size_t num_steps) {
 
 	try {
 		for (; step < num_steps; ++step) {
-			update_parts();
+			update_parts(step);
 
 			for (const auto &scope : voltage_scopes) {
 				scope->record_voltage(t);
