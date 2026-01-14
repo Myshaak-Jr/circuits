@@ -1,11 +1,11 @@
 #pragma once
 
-#include <array>
-#include <format>
-#include <stdexcept>
-
 #include "node.h"
 #include "part.h"
+#include <array>
+#include <format>
+#include <ranges>
+#include <stdexcept>
 
 
 template <size_t N>
@@ -20,7 +20,7 @@ protected:
 
 	virtual void update_pin_names() {
 		for (size_t i = 0; i < N; ++i) {
-			pin_names[i] = std::format("{}-pin{}", name, i);
+			pin_names[i] = std::format("{}.{}", name, static_cast<char>('a' + i));
 		}
 	}
 
@@ -52,6 +52,22 @@ public:
 	ConstPin pin(size_t pin_id) const override {
 		assert_pin_id(pin_id);
 		return ConstPin{ pin_id, nodes[pin_id], this, pin_names[pin_id] };
+	}
+
+	Pin pin(const std::string &pinname) override {
+		for (size_t i = 0; i < pin_names.size(); ++i) {
+			if (pin_names[i] == pinname) return pin(i);
+		}
+
+		throw std::out_of_range(std::format("NPinPart<{}> does not have pin {}", N, pinname));
+	}
+
+	ConstPin pin(const std::string &pinname) const override {
+		for (size_t i = 0; i < pin_names.size(); ++i) {
+			if (pin_names[i] == pinname) return pin(i);
+		}
+
+		throw std::out_of_range(std::format("NPinPart<{}> does not have pin {}", N, pinname));
 	}
 
 	const std::string &get_name() const override { return name; }

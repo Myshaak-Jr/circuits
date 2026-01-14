@@ -19,6 +19,8 @@ public:
 	explicit VoltageSource(const std::string &name, scalar voltage);
 	~VoltageSource() noexcept;
 
+	PartType get_type() const noexcept override { return PartType::VoltageSource; }
+
 	size_t num_needed_matrix_rows() const override { return pin().node->is_ground ? 0 : 1; }
 	void set_first_matrix_row_id(size_t row_id) override { branch_id = row_id; }
 	size_t get_first_matrix_row_id() override { return branch_id; }

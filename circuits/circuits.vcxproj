@@ -138,6 +138,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\circuit\circuit.cpp" />
+    <ClCompile Include="src\circuit\interpreter.cpp" />
     <ClCompile Include="src\circuit\n_pin_part.h" />
     <ClCompile Include="src\circuit\parts\capacitor.cpp" />
     <ClCompile Include="src\circuit\parts\current_source.cpp" />
@@ -204,6 +205,7 @@
     <ClInclude Include="src\circuit\scope.h" />
     <ClInclude Include="src\circuit\scalar.h" />
     <ClInclude Include="src\circuit\parts\voltage_source.h" />
+    <ClInclude Include="src\circuit\interpreter.h" />
     <ClInclude Include="src\circuit\util.h" />
     <ClInclude Include="src\lingebra\lingebra.h" />
     <ClInclude Include="src\settings.h" />

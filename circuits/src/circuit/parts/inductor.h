@@ -17,6 +17,8 @@ public:
 	Inductor(const std::string &name, scalar inductance);
 	~Inductor() noexcept = default;
 
+	PartType get_type() const noexcept override { return PartType::Inductor; }
+
 	size_t num_needed_matrix_rows() const override { return 1; }
 	void set_first_matrix_row_id(size_t row_id) override { branch_id = row_id; }
 	size_t get_first_matrix_row_id() override { return branch_id; }

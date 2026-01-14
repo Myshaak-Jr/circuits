@@ -1,0 +1,16 @@
+// parts
+voltage_source V1: 5V
+switch S1
+resistor R1: 1kOhm
+capacitor C1: 5uF
+
+// connections
+V1 - S1 - R1 - C1 - GND
+
+// scopes
+scope voltage between C1.a and GND
+scope current of C1
+
+// schedule
+turn on S1 at 100ms
+turn off S1 at 0.9s

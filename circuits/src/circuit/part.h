@@ -17,16 +17,31 @@ struct StampParams {
 };
 
 
+enum class PartType {
+	Capacitor,
+	CurrentSource,
+	Inductor,
+	Resistor,
+	Switch,
+	VoltageSource,
+};
+
+
 class Part {
 public:
 	Part() = default;
 	virtual ~Part() = default;
+
+	virtual PartType get_type() const noexcept = 0;
 
 	virtual size_t pin_count() const noexcept = 0;
 
 	virtual void set_node(size_t pin_id, Node *node) = 0;
 	virtual Pin pin(size_t pin_id) = 0;
 	virtual ConstPin pin(size_t pin_id) const = 0;
+
+	virtual Pin pin(const std::string &pinname) = 0;
+	virtual ConstPin pin(const std::string &pinname) const = 0;
 
 	virtual size_t num_needed_matrix_rows() const { return 0; };
 	virtual void set_first_matrix_row_id(size_t first_row_id) {}

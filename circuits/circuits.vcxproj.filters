@@ -51,6 +51,9 @@
     <ClCompile Include="src\circuit\parts\switch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\circuit\interpreter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\circuit\node.h">
@@ -219,6 +222,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="libs\include\sciplot\Utils.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\circuit\interpreter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

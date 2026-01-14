@@ -1,5 +1,6 @@
 #pragma once
 
+#include "circuit/scalar.h"
 #include <filesystem>
 
 
@@ -13,6 +14,8 @@ struct Settings {
 	bool exit = false;
 	int exit_code = 0;
 	fs::path tables_path = fs::path("./tables/");
+	scalar samplerate = 44100.0;
+	fs::path circuit_path = fs::path("");
 };
 
 Settings handle_args(int argc, char *argv[]);

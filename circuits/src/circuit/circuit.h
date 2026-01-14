@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../lingebra/lingebra.h"
+#include "interpreter.h"
 #include "n_pin_part.h"
 #include "node.h"
 #include "part.h"
@@ -33,8 +34,10 @@ private:
 	lingebra::Matrix<scalar> build_matrix(const StampParams &params) const;
 	void update(size_t step);
 
+	std::unique_ptr<Interpreter> interpreter;
+
 public:
-	explicit Circuit(scalar timestep, const fs::path &scope_export_path = "./");
+	Circuit(scalar timestep, const fs::path &scope_export_path = "./");
 	~Circuit() noexcept = default;
 
 
@@ -67,6 +70,8 @@ public:
 
 	void export_tables() const;
 	void show_graphs() const;
+
+	void load_circuit(const fs::path &script);
 
 	void run_for_steps(size_t num_steps);
 	void run_for_seconds(scalar secs);

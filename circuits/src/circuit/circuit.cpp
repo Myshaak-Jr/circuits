@@ -9,14 +9,18 @@
 #include "util.h"
 #include <cmath>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <utility>
+
 
 
 Circuit::Circuit(scalar timestep, const fs::path &scope_export_path) :
 	timestep(timestep),
-	scope_export_path(scope_export_path / make_timestamp()) {
+	scope_export_path(scope_export_path / make_timestamp()),
+	interpreter(std::make_unique<Interpreter>(*this)) {
 	fs::create_directories(this->scope_export_path);
 	fs::create_directories(scope_export_path / "latest");
 	ground = add_part<VoltageSource>("GND", 0.0f);
@@ -191,4 +195,14 @@ void Circuit::show_graphs() const {
 	canvas.defaultPalette("set1");
 
 	canvas.show();
+}
+
+void Circuit::load_circuit(const fs::path &script) {
+	std::ifstream f(script);
+
+	if (!f) {
+		throw std::runtime_error("Cannot open script file: " + script.string());
+	}
+
+	interpreter->execute(f);
 }
