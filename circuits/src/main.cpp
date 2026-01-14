@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
 	circuit.run_for_seconds(500_m);
 
 	circuit.export_tables();
+	circuit.show_graphs();
 
 	return 0;
 }

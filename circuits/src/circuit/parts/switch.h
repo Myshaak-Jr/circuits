@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../circuit_matrix.h"
 #include "../n_pin_part.h"
 #include "../part.h"
 #include "../pin.h"
@@ -41,9 +40,10 @@ public:
 	Switch(const std::string &name, bool on = false);
 	~Switch() noexcept = default;
 
-	void pre_stamp(CircuitMatrix &matrix, const StampParams &params) override;
-	void stamp(CircuitMatrix &matrix, const StampParams &params) const override;
-	void post_stamp(const CircuitMatrix &matrix, const StampParams &params) override;
+	std::vector<std::tuple<size_t, size_t, scalar>> gen_matrix_entries(const StampParams &params) override;
+	void stamp_rhs_entries(std::vector<scalar> &rhs, const StampParams &params) override {}
+
+	void update(const StampParams &params) override;
 
 	scalar get_current_between(const ConstPin &a, const ConstPin &b) const override;
 
@@ -53,5 +53,9 @@ public:
 	void schedule_on(size_t step);
 	void schedule_off(size_t step);
 
-	constexpr bool requires_matrix_row() const override { return true; }
+	size_t num_needed_matrix_rows() const override { return 1; }
+	void set_first_matrix_row_id(size_t row_id) override { branch_id = row_id; }
+	size_t get_first_matrix_row_id() override { return branch_id; }
+
+	void update_value_from_result(size_t i, scalar value) override { last_i = value; }
 };

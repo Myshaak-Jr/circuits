@@ -72,9 +72,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>simlogue</TargetName>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)libs/include/</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>simlogue</TargetName>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)libs/include/</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -136,7 +138,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\circuit\circuit.cpp" />
-    <ClCompile Include="src\circuit\circuit_matrix.cpp" />
     <ClCompile Include="src\circuit\n_pin_part.h" />
     <ClCompile Include="src\circuit\parts\capacitor.cpp" />
     <ClCompile Include="src\circuit\parts\current_source.cpp" />
@@ -150,13 +151,53 @@
     <ClCompile Include="src\settings.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="libs\include\sciplot\Canvas.hpp" />
+    <ClInclude Include="libs\include\sciplot\ColumnIndex.hpp" />
+    <ClInclude Include="libs\include\sciplot\Constants.hpp" />
+    <ClInclude Include="libs\include\sciplot\Default.hpp" />
+    <ClInclude Include="libs\include\sciplot\Enums.hpp" />
+    <ClInclude Include="libs\include\sciplot\Figure.hpp" />
+    <ClInclude Include="libs\include\sciplot\Palettes.hpp" />
+    <ClInclude Include="libs\include\sciplot\Plot.hpp" />
+    <ClInclude Include="libs\include\sciplot\Plot2D.hpp" />
+    <ClInclude Include="libs\include\sciplot\Plot3D.hpp" />
+    <ClInclude Include="libs\include\sciplot\sciplot.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\AxisLabelSpecs.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\BorderSpecs.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\DepthSpecsOf.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\DrawSpecs.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\FilledCurvesSpecsOf.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\FillSpecsOf.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\FillStyleSpecs.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\FontSpecsOf.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\FrameSpecsOf.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\GridSpecs.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\GridSpecsBase.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\HistogramStyleSpecs.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\LabelSpecs.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\LayoutSpecs.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\LegendSpecs.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\LineSpecsOf.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\OffsetSpecsOf.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\PointSpecsOf.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\ShowSpecsOf.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\Specs.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\TextSpecsOf.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\TicsSpecs.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\TicsSpecsBaseOf.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\TicsSpecsMajor.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\TicsSpecsMinor.hpp" />
+    <ClInclude Include="libs\include\sciplot\specs\TitleSpecsOf.hpp" />
+    <ClInclude Include="libs\include\sciplot\StringOrDouble.hpp" />
+    <ClInclude Include="libs\include\sciplot\Utils.hpp" />
+    <ClInclude Include="libs\include\sciplot\Vec.hpp" />
     <ClInclude Include="src\circuit\circuit.h" />
-    <ClInclude Include="src\circuit\circuit_matrix.h" />
     <ClInclude Include="src\circuit\node.h" />
     <ClInclude Include="src\circuit\part.h" />
     <ClInclude Include="src\circuit\parts\capacitor.h" />
     <ClInclude Include="src\circuit\parts\current_source.h" />
     <ClInclude Include="src\circuit\parts\inductor.h" />
+    <ClInclude Include="src\circuit\parts\opamp.h" />
     <ClInclude Include="src\circuit\parts\switch.h" />
     <ClInclude Include="src\circuit\pin.h" />
     <ClInclude Include="src\circuit\parts\resistor.h" />

@@ -1,4 +1,3 @@
-#include "../circuit_matrix.h"
 #include "../n_pin_part.h"
 #include "../part.h"
 #include "../pin.h"
@@ -12,8 +11,9 @@ CurrentSource::CurrentSource(const std::string &name, scalar current) :
 	current(current) {
 }
 
-void CurrentSource::stamp(CircuitMatrix &matrix, const StampParams &params) const {
-	matrix.stamp_template_RHS(pin(0), pin(1), current);
+void CurrentSource::stamp_rhs_entries(std::vector<scalar> &rhs, const StampParams &params) {
+	rhs[pin(0).node->node_id] = -current;
+	rhs[pin(1).node->node_id] = current;
 }
 
 scalar CurrentSource::get_current_between(const ConstPin &a, const ConstPin &b) const {

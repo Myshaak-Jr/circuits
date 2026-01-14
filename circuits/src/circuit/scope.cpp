@@ -6,68 +6,78 @@
 #include "part.h"
 #include "pin.h"
 #include "scalar.h"
+#include <cassert>
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
 
 
-VoltageScope::VoltageScope(const ConstPin &a, const ConstPin &b, const fs::path &export_path) : a(a), b(b), export_path(export_path) {}
+Scope::Scope(const ConstPin &a, const ConstPin &b, const fs::path &export_path, const std::string &values_name) :
+	a(a), b(b),
+	export_path(export_path),
+	values_name(values_name) {
+	name = std::format("{}-between-{}-and-{}", values_name, a.name, b.name);
+}
 
-void VoltageScope::record_voltage(scalar time) {
+void Scope::export_table() const {
+	fs::path filename = std::format("{}.csv", name);
+	fs::path filepath = export_path / filename;
+	std::ofstream file(filepath);
+	if (!file.is_open()) {
+		throw std::runtime_error("Failed to open output file: " + filepath.string());
+	}
+
+	file << "time," << values_name << "\n";
+
+	for (size_t i = 0; i < times.size(); ++i) {
+		file << times[i] << "," << values[i] << "\n";
+	}
+
+	file.close();
+
+	fs::remove(export_path.parent_path() / "latest" / filename);
+	fs::copy_file(filepath, export_path.parent_path() / "latest" / filename);
+
+	std::cout << "Exported " << values_name << " table " << filepath << "\n";
+}
+
+void Scope::plot(sciplot::Plot2D &p) const {
+	using namespace sciplot;
+
+	p.palette("paired");
+
+	if constexpr (std::is_same_v<scalar, double>) {
+		p.drawCurve(times, values);
+	}
+	else {
+		std::vector<double> x(times.begin(), times.end());
+		std::vector<double> y(values.begin(), values.end());
+
+		p.drawCurve(x, y);
+	}
+
+	std::cout << "Plotted " << name << "\n";
+}
+
+
+VoltageScope::VoltageScope(const ConstPin &a, const ConstPin &b, const fs::path &export_path) :
+	Scope(a, b, export_path, "voltage") {
+}
+
+void VoltageScope::record(scalar time) {
 	scalar voltage = a.node->voltage - b.node->voltage;
-	data.push_back(DataEntry(time, voltage));
+	times.push_back(time);
+	values.push_back(voltage);
 }
 
-void VoltageScope::export_data() const {
-	fs::path filename = std::format("voltage-between-{}-and-{}.csv", a.name, b.name);
-	fs::path filepath = export_path / filename;
-	std::ofstream file(filepath);
-	if (!file.is_open()) {
-		throw std::runtime_error("Failed to open output file: " + filepath.string());
-	}
-
-	file << "Time,Voltage\n";
-
-	for (const DataEntry &entry : data) {
-		file << entry.time << "," << entry.voltage << "\n";
-	}
-
-	file.close();
-
-	fs::remove(export_path.parent_path() / "latest" / filename);
-	fs::copy_file(filepath, export_path.parent_path() / "latest" / filename);
-
-	std::cout << "Exported voltage table " << filepath << "\n";
+CurrentScope::CurrentScope(const ConstPin &a, const ConstPin &b, const fs::path &export_path) :
+	Scope(a, b, export_path, "current") {
+	assert(a.owner == b.owner);
 }
 
-
-CurrentScope::CurrentScope(const ConstPin &a, const ConstPin &b, const fs::path &export_path) : a(a), b(b), export_path(export_path) {}
-
-void CurrentScope::record_current(scalar time) {
+void CurrentScope::record(scalar time) {
 	const Part *part = a.owner;
-
 	scalar current = part->get_current_between(a, b);
-	data.push_back(DataEntry(time, current));
-}
-
-void CurrentScope::export_data() const {
-	fs::path filename = std::format("current-between-{}-and-{}.csv", a.name, b.name);
-	fs::path filepath = export_path / filename;
-	std::ofstream file(filepath);
-	if (!file.is_open()) {
-		throw std::runtime_error("Failed to open output file: " + filepath.string());
-	}
-
-	file << "Time,Current\n";
-
-	for (const DataEntry &entry : data) {
-		file << entry.time << "," << entry.current << "\n";
-	}
-
-	file.close();
-
-	fs::remove(export_path.parent_path() / "latest" / filename);
-	fs::copy_file(filepath, export_path.parent_path() / "latest" / filename);
-
-	std::cout << "Exported current table " << filepath << "\n";
+	times.push_back(time);
+	values.push_back(current);
 }

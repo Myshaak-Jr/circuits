@@ -23,3 +23,27 @@ std::string make_timestamp() {
 		tm.tm_sec
 	);
 }
+
+size_t floor_sqrt(size_t n) {
+	size_t lo = 0, hi = n, ans = 0;
+
+	while (lo <= hi) {
+		size_t mid = (lo + hi) / 2;
+		size_t sq = mid * mid;
+
+		if (sq <= n) {
+			ans = mid;
+			lo = mid + 1;
+		}
+		else {
+			hi = mid - 1;
+		}
+	}
+
+	return ans;
+}
+
+size_t ceil_sqrt(size_t n) {
+	size_t ans = floor_sqrt(n);
+	return (ans * ans == n) ? ans : ans + 1;
+}

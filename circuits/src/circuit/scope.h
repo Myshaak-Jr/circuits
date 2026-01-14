@@ -3,52 +3,48 @@
 #include "pin.h"
 #include "scalar.h"
 #include <filesystem>
+#include <memory>
+#include <sciplot/sciplot.hpp>
 #include <vector>
 
 
 namespace fs = std::filesystem;
 
 
-class VoltageScope {
+class Scope {
 private:
-	struct DataEntry {
-		scalar time;
-		scalar voltage;
-	};
-
-	std::vector<DataEntry> data;
-
 	fs::path export_path;
+
+protected:
+	std::vector<scalar> times;
+	std::vector<scalar> values;
 
 	ConstPin a;
 	ConstPin b;
 
+	std::string values_name;
+	std::string name;
+
+public:
+	Scope(const ConstPin &a, const ConstPin &b, const fs::path &export_path, const std::string &values_name);
+
+	virtual void record(scalar time) = 0;
+
+	void export_table() const;
+	void plot(sciplot::Plot2D &p) const;
+};
+
+
+class VoltageScope : public Scope {
 public:
 	VoltageScope(const ConstPin &a, const ConstPin &b, const fs::path &export_path);
 
-	void record_voltage(scalar time);
-
-	void export_data() const;
+	void record(scalar time) override;
 };
 
-class CurrentScope {
-private:
-	struct DataEntry {
-		scalar time;
-		scalar current;
-	};
-
-	std::vector<DataEntry> data;
-
-	fs::path export_path;
-
-	ConstPin a;
-	ConstPin b;
-
+class CurrentScope : public Scope {
 public:
 	CurrentScope(const ConstPin &a, const ConstPin &b, const fs::path &export_path);
 
-	void record_current(scalar time);
-
-	void export_data() const;
+	void record(scalar time) override;
 };

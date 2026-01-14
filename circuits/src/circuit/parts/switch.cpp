@@ -3,21 +3,41 @@
 
 Switch::Switch(const std::string &name, bool on) : NPinPart<2>(name), branch_id(0), last_i(0.0), on(on) {}
 
-void Switch::pre_stamp(CircuitMatrix &matrix, const StampParams &params) {
+std::vector<std::tuple<size_t, size_t, scalar>> Switch::gen_matrix_entries(const StampParams &params) {
+	const scalar req = on ? 0 : off_resistance;
+
+	std::vector<std::tuple<size_t, size_t, scalar>> entries;
+
+	entries.push_back({ branch_id, branch_id, -req });
+
+	const auto &node0 = pin(0).node;
+	const auto &node1 = pin(1).node;
+
+	if (!node0->is_ground) {
+		entries.push_back({ node0->node_id, branch_id, 1.0 });
+		entries.push_back({ branch_id, node0->node_id, 1.0 });
+	}
+	if (!node1->is_ground) {
+		entries.push_back({ node1->node_id, branch_id, -1.0 });
+		entries.push_back({ branch_id, node1->node_id, -1.0 });
+	}
+
+	return entries;
+}
+
+void Switch::update(const StampParams &params) {
+	bool new_on = on;
+
 	while (!events.empty() && events.top().step <= params.step) {
-		on = events.top().type == EventType::ON;
+		new_on = events.top().type == EventType::ON;
 		events.pop();
 	}
 
-	branch_id = matrix.reserve_row();
-}
+	if (new_on != on) {
+		//...
+	}
 
-void Switch::stamp(CircuitMatrix &matrix, const StampParams &params) const {
-	matrix.stamp_template_I_out_LHS(pin(0), pin(1), branch_id, 1.0, on ? 0 : off_resistance);
-}
-
-void Switch::post_stamp(const CircuitMatrix &matrix, const StampParams &params) {
-	last_i = matrix.get_solution_value(branch_id);
+	on = new_on;
 }
 
 scalar Switch::get_current_between(const ConstPin &a, const ConstPin &b) const {

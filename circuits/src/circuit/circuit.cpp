@@ -5,9 +5,9 @@
 #include "parts/voltage_source.h"
 #include "pin.h"
 #include "scalar.h"
-#include "scalar.h"
 #include "scope.h"
 #include "util.h"
+#include <cmath>
 #include <filesystem>
 #include <iostream>
 #include <memory>
@@ -16,7 +16,6 @@
 
 Circuit::Circuit(scalar timestep, const fs::path &scope_export_path) :
 	timestep(timestep),
-	matrix(),
 	scope_export_path(scope_export_path / make_timestamp()) {
 	fs::create_directories(this->scope_export_path);
 	fs::create_directories(scope_export_path / "latest");
@@ -54,44 +53,77 @@ void Circuit::connect(const Pin &pin_a, const Pin &pin_b) {
 	}
 }
 
-void Circuit::update_parts(size_t step) {
+lingebra::Matrix<scalar> Circuit::build_matrix(const StampParams &params) const {
+	// reserve rows
+	size_t num_rows = 0;
+
+	for (auto &node : nodes) {
+		if (node->is_ground) continue;
+		node->node_id = num_rows++;
+	}
+
+	for (auto &part : parts) {
+		part->set_first_matrix_row_id(num_rows);
+		num_rows += part->num_needed_matrix_rows();
+	}
+
+	// [(row, column, data), ...]
+	std::vector<std::tuple<size_t, size_t, scalar>> matrix_entries;
+
+	for (const auto &part : parts) {
+		matrix_entries.append_range(part->gen_matrix_entries(params));
+	}
+
+	lingebra::Matrix<scalar> matrix(num_rows, num_rows);
+
+	for (const auto &[row, col, value] : matrix_entries) {
+		matrix(row, col) += value;
+	}
+
+	return matrix;
+}
+
+void Circuit::update(size_t step) {
 	StampParams params{
-	.ground = ground->pin(),
-	.timestep = timestep,
-	.timestep_inv = 1.0 / timestep,
-	.step = step
+		.ground = ground->pin(),
+		.timestep = timestep,
+		.timestep_inv = 1.0 / timestep,
+		.step = step
 	};
 
-	// prepare the matrix and count the number of rows needed
-	matrix.reset_row_count();
-	for (auto &node : nodes) {
-		if (node->is_ground) continue;
-		node->node_id = matrix.reserve_row();
-	}
-	for (auto &part : parts) {
-		part->pre_stamp(matrix, params);
-	}
+	// TODO: update the matrix instead of building it anew
+	auto matrix = build_matrix(params);
 
-	matrix.init();
-
-	// fill the matrix
-	for (const auto &part : parts) {
-		part->stamp(matrix, params);
-	}
-
-	matrix.solve();
-
-	for (auto &node : nodes) {
-		if (node->is_ground) continue;
-		node->voltage = matrix.get_solution_value(node->node_id);
-	}
+	std::vector<scalar> rhs(matrix.m(), 0.0);
 
 	for (auto &part : parts) {
-		part->post_stamp(matrix, params);
+		part->stamp_rhs_entries(rhs, params);
+	}
+
+	lingebra::Vector<scalar> rhs_vec(rhs);
+
+	//std::cout << matrix.repr() << "\n" << rhs_vec.repr() << "\n";
+
+	lingebra::solve_gaussian_elimination(matrix, rhs_vec);
+
+	for (auto &part : parts) {
+		for (size_t i = 0; i < part->num_needed_matrix_rows(); ++i) {
+			part->update_value_from_result(i, rhs_vec[part->get_first_matrix_row_id() + i]);
+		}
+	}
+	for (auto &node : nodes) {
+		if (node->is_ground) continue;
+		node->voltage = rhs_vec[node->node_id];
+	}
+
+	for (auto &part : parts) {
+		part->update(params);
 	}
 }
 
 void Circuit::run_for_steps(size_t num_steps) {
+	// TODO: do LU decomposition
+
 	std::cout << "Running for " << num_steps << " steps\n";
 
 	size_t step = 0;
@@ -99,13 +131,10 @@ void Circuit::run_for_steps(size_t num_steps) {
 
 	try {
 		for (; step < num_steps; ++step) {
-			update_parts(step);
+			update(step);
 
-			for (const auto &scope : voltage_scopes) {
-				scope->record_voltage(t);
-			}
-			for (const auto &scope : current_scopes) {
-				scope->record_current(t);
+			for (const auto &scope : scopes) {
+				scope->record(t);
 			}
 
 			t += timestep;
@@ -122,20 +151,39 @@ void Circuit::run_for_seconds(scalar secs) {
 
 // scopes
 void Circuit::scope_voltage(const ConstPin &a, const ConstPin &b) {
-	voltage_scopes.push_back(std::make_unique<VoltageScope>(a, b, scope_export_path));
+	scopes.push_back(std::make_unique<VoltageScope>(a, b, scope_export_path));
 }
 
 void Circuit::scope_current(const ConstPin &a, const ConstPin &b) {
-	current_scopes.push_back(std::make_unique<CurrentScope>(a, b, scope_export_path));
+	scopes.push_back(std::make_unique<CurrentScope>(a, b, scope_export_path));
 }
 
 void Circuit::export_tables() const {
 	std::cout << "Exporting tables...\n";
 
-	for (const auto &scope : voltage_scopes) {
-		scope->export_data();
+	for (const auto &scope : scopes) {
+		scope->export_table();
 	}
-	for (const auto &scope : current_scopes) {
-		scope->export_data();
+}
+
+void Circuit::show_graphs() const {
+	using namespace sciplot;
+
+	// calculate the plot grid dimensions to be 16:9
+	size_t n = scopes.size();
+
+	size_t w = ceil_sqrt(n) * 4 / 3;
+	size_t h = (n + w - 1);
+
+	std::vector<std::vector<Plot2D>> plot_grid(h, std::vector<Plot2D>(w));
+
+	for (size_t i = 0; i < n; ++i) {
+		scopes[i]->plot(plot_grid[i / h][i % w]);
 	}
+
+	auto figure = std::make_unique<Figure>(plot_grid);
+	auto canvas = std::make_unique<Canvas>(std::initializer_list<std::initializer_list<Figure>>{ { *figure } });
+	canvas->defaultPalette("set1");
+
+	canvas->show();
 }

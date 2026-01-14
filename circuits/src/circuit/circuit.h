@@ -1,6 +1,6 @@
 #pragma once
 
-#include "circuit_matrix.h"
+#include "../lingebra/lingebra.h"
 #include "n_pin_part.h"
 #include "node.h"
 #include "part.h"
@@ -22,16 +22,16 @@ private:
 
 	VoltageSource *ground;
 
-	std::vector<std::unique_ptr<VoltageScope>> voltage_scopes;
-	std::vector<std::unique_ptr<CurrentScope>> current_scopes;
+	std::vector<std::unique_ptr<Scope>> scopes;
 
-	CircuitMatrix matrix;
 	scalar timestep;
 	fs::path scope_export_path;
 
 
 	Node *create_new_node();
-	void update_parts(size_t step);
+
+	lingebra::Matrix<scalar> build_matrix(const StampParams &params) const;
+	void update(size_t step);
 
 public:
 	explicit Circuit(scalar timestep, const fs::path &scope_export_path = "./");
@@ -66,6 +66,7 @@ public:
 	}
 
 	void export_tables() const;
+	void show_graphs() const;
 
 	void run_for_steps(size_t num_steps);
 	void run_for_seconds(scalar secs);

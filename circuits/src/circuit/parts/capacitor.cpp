@@ -1,4 +1,3 @@
-#include "../circuit_matrix.h"
 #include "../n_pin_part.h"
 #include "../part.h"
 #include "../pin.h"
@@ -17,20 +16,36 @@ Capacitor::Capacitor(const std::string &name, scalar capacitance) :
 }
 
 
-void Capacitor::pre_stamp(CircuitMatrix &matrix, const StampParams &params) {
+std::vector<std::tuple<size_t, size_t, scalar>> Capacitor::gen_matrix_entries(const StampParams &params) {
 	admittance = capacitance * params.timestep_inv;
+
+	const auto &node0 = pin(0).node;
+	const auto &node1 = pin(1).node;
+
+	std::vector<std::tuple<size_t, size_t, scalar>> entries;
+
+	if (!node0->is_ground && !node1->is_ground) {
+		entries.push_back({ node0->node_id, node0->node_id, admittance });
+		entries.push_back({ node0->node_id, node1->node_id, -admittance });
+		entries.push_back({ node1->node_id, node0->node_id, -admittance });
+		entries.push_back({ node1->node_id, node1->node_id, admittance });
+	}
+	else if (!node0->is_ground) {
+		entries.push_back({ node0->node_id, node0->node_id, admittance });
+	}
+	else if (!node1->is_ground) {
+		entries.push_back({ node1->node_id, node1->node_id, admittance });
+	}
+
+	return entries;
 }
 
-void Capacitor::stamp(CircuitMatrix &matrix, const StampParams &params) const {
-	matrix.stamp_template_LHS(pin(0), pin(1), admittance);
-	matrix.stamp_template_RHS(pin(0), pin(1), -admittance * last_v);
-}
-
-void Capacitor::post_stamp(const CircuitMatrix &matrix, const StampParams &params) {
+void Capacitor::update(const StampParams &params) {
 	scalar v_now = pin(0).node->voltage - pin(1).node->voltage;
 	last_i = admittance * (v_now - last_v);
 	last_v = v_now;
 }
+
 
 scalar Capacitor::get_current_between(const ConstPin &a, const ConstPin &b) const {
 	return last_i;
