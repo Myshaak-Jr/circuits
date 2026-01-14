@@ -40,6 +40,16 @@ std::vector<std::tuple<size_t, size_t, scalar>> Capacitor::gen_matrix_entries(co
 	return entries;
 }
 
+void Capacitor::stamp_rhs_entries(std::vector<scalar> &rhs, const StampParams &params) {
+	const auto &node0 = pin(0).node;
+	const auto &node1 = pin(1).node;
+
+	auto value = admittance * last_v;
+
+	if (!node0->is_ground) rhs[node0->node_id] = value;
+	if (!node1->is_ground) rhs[node1->node_id] = -value;
+}
+
 void Capacitor::update(const StampParams &params) {
 	scalar v_now = pin(0).node->voltage - pin(1).node->voltage;
 	last_i = admittance * (v_now - last_v);

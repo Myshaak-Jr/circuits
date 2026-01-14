@@ -12,8 +12,11 @@ CurrentSource::CurrentSource(const std::string &name, scalar current) :
 }
 
 void CurrentSource::stamp_rhs_entries(std::vector<scalar> &rhs, const StampParams &params) {
-	rhs[pin(0).node->node_id] = -current;
-	rhs[pin(1).node->node_id] = current;
+	const auto &node0 = pin(0).node;
+	const auto &node1 = pin(1).node;
+
+	if (!node0->is_ground) rhs[node0->node_id] = -current;
+	if (!node1->is_ground) rhs[node1->node_id] = current;
 }
 
 scalar CurrentSource::get_current_between(const ConstPin &a, const ConstPin &b) const {

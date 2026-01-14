@@ -56,6 +56,11 @@ void Scope::plot(sciplot::Plot2D &p) const {
 		p.drawCurve(x, y);
 	}
 
+	p.xlabel("time");
+	p.ylabel(values_name);
+
+	p.legend().hide();
+
 	std::cout << "Plotted " << name << "\n";
 }
 

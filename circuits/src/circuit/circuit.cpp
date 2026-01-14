@@ -167,23 +167,28 @@ void Circuit::export_tables() const {
 }
 
 void Circuit::show_graphs() const {
-	using namespace sciplot;
+	using sciplot::PlotVariant;
+	using sciplot::Plot2D;
+	using sciplot::Figure;
+	using sciplot::Canvas;
 
 	// calculate the plot grid dimensions to be 16:9
 	size_t n = scopes.size();
 
 	size_t w = ceil_sqrt(n) * 4 / 3;
-	size_t h = (n + w - 1);
+	size_t h = (n + w - 1) / w;
 
-	std::vector<std::vector<Plot2D>> plot_grid(h, std::vector<Plot2D>(w));
+	std::vector<std::vector<PlotVariant>> plot_grid(h, std::vector<PlotVariant>(w));
 
 	for (size_t i = 0; i < n; ++i) {
-		scopes[i]->plot(plot_grid[i / h][i % w]);
+		scopes[i]->plot(std::get<Plot2D>(plot_grid[i / w][i % w]));
 	}
 
-	auto figure = std::make_unique<Figure>(plot_grid);
-	auto canvas = std::make_unique<Canvas>(std::initializer_list<std::initializer_list<Figure>>{ { *figure } });
-	canvas->defaultPalette("set1");
+	Figure figure(plot_grid);
+	Canvas canvas{ {figure} };
+	canvas.size(1920 * 3 / 5, 1080 * 3 / 5);
 
-	canvas->show();
+	canvas.defaultPalette("set1");
+
+	canvas.show();
 }
