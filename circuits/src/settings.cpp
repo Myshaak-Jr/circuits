@@ -14,7 +14,7 @@ static void print_help() {
 		<< APP_VERSION_PATCH << "\n\n"
 
 		<< "Usage:\n"
-		<< "  simlogue [options] circuit_file\n\n"
+		<< "  simlogue [options] circuit_file duration\n\n"
 
 		<< "Options:\n"
 		<< "  -t, --tables     <path>   Path to generated CSV tables\n"
@@ -22,7 +22,10 @@ static void print_help() {
 		<< "  -v, --version             Show version information\n"
 		<< "  -h, --help			    Show this help message\n"
 		<< "  -r, --samplerate <freq>   Sets the samplerate in Hz\n"
-		<< "                            (default: 44100)\n";
+		<< "                            (default: 44100)\n"
+		<< "  -e, --export-tables       Exports the scope tables\n"
+		<< "  -g, --show_graphs         Displays the scope graphs after run\n"
+		;
 }
 
 static void print_version() {
@@ -37,6 +40,8 @@ Settings handle_args(int argc, char *argv[]) {
 
 	bool accept_options = true;
 
+	size_t pos_idx = 0;
+
 	for (int i = 1; i < argc; ++i) {
 		std::string option(argv[i]);
 
@@ -45,6 +50,12 @@ Settings handle_args(int argc, char *argv[]) {
 		}
 		else if (accept_options && (option == "-v" || option == "--version")) {
 			do_print_version = true;
+		}
+		else if (accept_options && (option == "-e" || option == "--export-tables")) {
+			settings.export_tables = true;
+		}
+		else if (accept_options && (option == "-g" || option == "--show_graphs")) {
+			settings.show_graphs = true;
 		}
 		else if (accept_options && (option == "-t" || option == "--tables")) {
 			if (++i >= argc) {
@@ -76,14 +87,31 @@ Settings handle_args(int argc, char *argv[]) {
 			}
 		}
 		else {
-			if (settings.circuit_path == "") {
+			if (pos_idx == 0) {
 				settings.circuit_path = option;
 			}
+			else if (pos_idx == 1) {
+				try {
+					settings.duration = std::stof(argv[i]);
+				}
+				catch (const std::exception &) {
+					std::cout << "Argument duration must be a floating point number in valid range.\nSee help:\n\n";
+					print_help();
+					return Settings{ .exit = true, .exit_code = 2 };
+				}
+				if (settings.duration <= 0.0) {
+					std::cout << "Argument duration must be positive.\n";
+					print_help();
+					return Settings{ .exit = true, .exit_code = 2 };
+				}
+			}
 			else {
-				std::cout << "SimLogue accepts just one positional argument.\nSee help:\n\n";
+				std::cout << "SimLogue accepts just 2 positional argument.\nSee help:\n\n";
 				print_help();
 				return Settings{ .exit = true, .exit_code = 2 };
 			}
+
+			++pos_idx;
 		}
 	}
 

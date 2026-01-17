@@ -18,22 +18,23 @@ private:
 protected:
 	std::array<std::string, N> pin_names;
 
-	virtual void update_pin_names() {
-		for (size_t i = 0; i < N; ++i) {
-			pin_names[i] = std::format("{}.{}", name, static_cast<char>('a' + i));
-		}
-	}
-
 	void assert_pin_id(size_t pin_id) const {
 		if (pin_id >= N) {
 			throw std::out_of_range(std::format("NPinPart<{}> does not have pin {}", N, pin_id));
 		}
 	}
 
+	virtual std::string get_pin_name(size_t pin_id) const noexcept {
+		return pin_names[pin_id];
+	}
+
 public:
 	NPinPart(const std::string &name) : name(name) {
 		nodes.fill(nullptr);
-		update_pin_names();
+
+		for (size_t i = 0; i < N; ++i) {
+			pin_names[i] = std::format("{}", static_cast<char>('a' + i));
+		}
 	};
 	~NPinPart() noexcept = default;
 
@@ -46,12 +47,12 @@ public:
 
 	Pin pin(size_t pin_id) override {
 		assert_pin_id(pin_id);
-		return Pin{ pin_id, nodes[pin_id], this, pin_names[pin_id] };
+		return Pin(pin_id, nodes[pin_id], this, std::format("{}.{}", name, get_pin_name(pin_id)));
 	}
 
 	ConstPin pin(size_t pin_id) const override {
 		assert_pin_id(pin_id);
-		return ConstPin{ pin_id, nodes[pin_id], this, pin_names[pin_id] };
+		return ConstPin(pin_id, nodes[pin_id], this, std::format("{}.{}", name, get_pin_name(pin_id)));
 	}
 
 	Pin pin(const std::string &pinname) override {
@@ -74,7 +75,6 @@ public:
 
 	void set_name(const std::string &name) override {
 		this->name = name;
-		update_pin_names();
 	}
 
 	Pin pin() requires(N == 1) { return pin(0); }

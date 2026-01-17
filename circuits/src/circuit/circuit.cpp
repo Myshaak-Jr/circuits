@@ -1,5 +1,6 @@
 #include "../lingebra/lingebra.h"
 #include "circuit.h"
+#include "interpreter.h"
 #include "node.h"
 #include "part.h"
 #include "parts/voltage_source.h"
@@ -27,7 +28,10 @@ Circuit::Circuit(scalar timestep, const fs::path &scope_export_path) :
 	Node *ground_node = create_new_node();
 	ground_node->is_ground = true;
 	ground->set_node(0, ground_node);
+	interpreter->set_ground();
 }
+
+Circuit::~Circuit() noexcept {}
 
 
 VoltageSource *Circuit::get_ground() const {

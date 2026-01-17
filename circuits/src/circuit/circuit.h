@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../lingebra/lingebra.h"
-#include "interpreter.h"
 #include "n_pin_part.h"
 #include "node.h"
 #include "part.h"
@@ -15,6 +14,8 @@
 #include <type_traits>
 #include <vector>
 
+
+class Interpreter;
 
 class Circuit {
 private:
@@ -34,11 +35,11 @@ private:
 	lingebra::Matrix<scalar> build_matrix(const StampParams &params) const;
 	void update(size_t step);
 
-	std::unique_ptr<Interpreter> interpreter;
+	std::unique_ptr<class Interpreter> interpreter;
 
 public:
 	Circuit(scalar timestep, const fs::path &scope_export_path = "./");
-	~Circuit() noexcept = default;
+	~Circuit() noexcept;
 
 
 	template <class TPart, class... TArgs>

@@ -15,8 +15,6 @@ public:
 	CurrentSource(const std::string &name, scalar current);
 	~CurrentSource() noexcept = default;
 
-	PartType get_type() const noexcept override { return PartType::CurrentSource; }
-
 	std::vector<std::tuple<size_t, size_t, scalar>> gen_matrix_entries(const StampParams &params) override { return {}; }
 	void stamp_rhs_entries(std::vector<scalar> &rhs, const StampParams &params) override;
 

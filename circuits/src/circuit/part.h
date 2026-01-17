@@ -17,22 +17,10 @@ struct StampParams {
 };
 
 
-enum class PartType {
-	Capacitor,
-	CurrentSource,
-	Inductor,
-	Resistor,
-	Switch,
-	VoltageSource,
-};
-
-
 class Part {
 public:
 	Part() = default;
 	virtual ~Part() = default;
-
-	virtual PartType get_type() const noexcept = 0;
 
 	virtual size_t pin_count() const noexcept = 0;
 

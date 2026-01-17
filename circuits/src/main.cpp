@@ -3,6 +3,7 @@
 #include "settings.h"
 
 #include "circuit/circuit.h"
+#include "circuit/interpreter.h"
 #include "circuit/parts/capacitor.h"
 #include "circuit/parts/resistor.h"
 #include "circuit/parts/switch.h"
@@ -17,15 +18,21 @@ int main(int argc, char *argv[]) {
 	if (settings.exit) return settings.exit_code;
 
 
+	Circuit circuit(1e-5, settings.tables_path);
 
+	try {
+		circuit.load_circuit(settings.circuit_path);
+	}
+	catch (const std::exception &e) {
+		std::cerr << e.what() << "\n";
+	}
 
-	Circuit circuit(settings.samplerate, settings.tables_path);
+	circuit.run_for_seconds(settings.duration);
 
-	circuit.load_circuit(settings.circuit_path);
+	if (settings.export_tables) circuit.export_tables();
+	if (settings.show_graphs) circuit.show_graphs();
 
 	return 0;
-
-
 
 	// Main code
 	//Circuit circuit(1e-5, settings.tables_path);
@@ -34,10 +41,10 @@ int main(int argc, char *argv[]) {
 	//VoltageSource *source = circuit.add_part<VoltageSource>("V1", 5);
 
 	//Resistor *R1 = circuit.add_part<Resistor>("R1", 1_k);
-	//Capacitor *C1 = circuit.add_part<Capacitor>("C1", 10_u);
+	//Capacitor *C1 = circuit.add_part<Capacitor>("C1", 5_u);
 	//Switch *S1 = circuit.add_part<Switch>("S1");
 
-	//circuit.connect(S1->pin(0), source->pin());
+	//circuit.connect(source->pin(), S1->pin(0));
 	//circuit.connect(R1->pin(0), S1->pin(1));
 	//circuit.connect(R1->pin(1), C1->pin(0));
 	//circuit.connect(C1->pin(1), ground->pin());
@@ -55,5 +62,5 @@ int main(int argc, char *argv[]) {
 	//circuit.export_tables();
 	//circuit.show_graphs();
 
-	//return 0;
+	return 0;
 }

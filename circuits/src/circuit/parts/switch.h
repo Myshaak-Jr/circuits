@@ -40,8 +40,6 @@ public:
 	Switch(const std::string &name, bool on = false);
 	~Switch() noexcept = default;
 
-	PartType get_type() const noexcept override { return PartType::Switch; }
-
 	std::vector<std::tuple<size_t, size_t, scalar>> gen_matrix_entries(const StampParams &params) override;
 	void stamp_rhs_entries(std::vector<scalar> &rhs, const StampParams &params) override {}
 
