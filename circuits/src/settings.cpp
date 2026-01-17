@@ -16,6 +16,9 @@ static void print_help() {
 		<< "Usage:\n"
 		<< "  simlogue [options] circuit_file duration\n\n"
 
+		<< "  circuit_file       .simlog file to load the circuit from\n"
+		<< "  circuit_file       floating point value in second\n\n"
+
 		<< "Options:\n"
 		<< "  -t, --tables     <path>   Path to generated CSV tables\n"
 		<< "                            (default: ./tables/)\n"
