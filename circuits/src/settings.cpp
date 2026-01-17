@@ -24,7 +24,7 @@ static void print_help() {
 		<< "  -r, --samplerate <freq>   Sets the samplerate in Hz\n"
 		<< "                            (default: 44100)\n"
 		<< "  -e, --export-tables       Exports the scope tables\n"
-		<< "  -g, --show_graphs         Displays the scope graphs after run\n"
+		<< "  -g, --show-graphs         Displays the scope graphs after run\n"
 		;
 }
 

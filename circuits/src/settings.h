@@ -6,7 +6,7 @@
 
 constexpr int APP_VERSION_MAJOR = 0;
 constexpr int APP_VERSION_MINOR = 2;
-constexpr int APP_VERSION_PATCH = 0;
+constexpr int APP_VERSION_PATCH = 1;
 
 namespace fs = std::filesystem;
 
